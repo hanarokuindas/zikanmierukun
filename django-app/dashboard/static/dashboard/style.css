@@ -386,3 +386,54 @@ table.data-table th {
   color: var(--muted);
   font-weight: 600;
 }
+
+.print-only {
+  display: none;
+}
+
+@media print {
+  .app-header,
+  .toolbar,
+  .tabs {
+    display: none !important;
+  }
+
+  .print-only {
+    display: block;
+  }
+
+  .print-report-header {
+    margin: 0 0 16px;
+  }
+
+  .print-report-header h2 {
+    margin: 0 0 6px;
+    font-size: 18px;
+  }
+
+  .print-report-header p {
+    margin: 0;
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  body {
+    background: #fff;
+  }
+
+  .container {
+    padding: 0;
+    max-width: none;
+  }
+
+  .kpi-card,
+  .chart-card,
+  .card {
+    break-inside: avoid;
+    box-shadow: none;
+  }
+
+  .checkbox-dropdown-panel {
+    display: none !important;
+  }
+}

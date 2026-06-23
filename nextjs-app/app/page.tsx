@@ -116,6 +116,22 @@ export default function Home() {
                   別のCSVを読み込む
                 </button>
               </label>
+              <label>
+                レポート出力
+                <button className="btn btn-primary" onClick={() => window.print()}>
+                  印刷 / PDFで保存
+                </button>
+              </label>
+            </div>
+
+            <div className="print-only print-report-header">
+              <h2>時間見えるくん レポート</h2>
+              <p>
+                出力日: {new Date().toLocaleDateString("ja-JP")} ／
+                クライアント: {filters.clients.length ? filters.clients.join("、") : "すべて"} ／
+                講座: {filters.courses.length ? filters.courses.join("、") : "すべて"} ／
+                用途: {filters.usageTypes.length ? filters.usageTypes.join("、") : "すべて"}
+              </p>
             </div>
 
             {errors.length > 0 && (

@@ -94,6 +94,20 @@
         <button type="submit" class="btn">別のCSVを読み込む</button>
       </form>
     </label>
+    <label>
+      レポート出力
+      <button type="button" class="btn btn-primary" onclick="window.print()">印刷 / PDFで保存</button>
+    </label>
+  </div>
+
+  <div class="print-only print-report-header">
+    <h2>時間見えるくん レポート</h2>
+    <p>
+      出力日: {% now "Y年n月j日" %} ／
+      クライアント: {% if selected_clients %}{{ selected_clients|join:"、" }}{% else %}すべて{% endif %} ／
+      講座: {% if selected_courses %}{{ selected_courses|join:"、" }}{% else %}すべて{% endif %} ／
+      用途: {% if usage_type %}{{ usage_type }}{% else %}すべて{% endif %}
+    </p>
   </div>
 
   {% if errors %}
