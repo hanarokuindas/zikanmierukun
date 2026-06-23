@@ -68,6 +68,18 @@ def dashboard(request):
         workday_mode = 260
     if workday_mode not in (260, 365):
         workday_mode = 260
+    try:
+        hourly_wage = int(request.GET.get("hourly_wage", "3000"))
+    except ValueError:
+        hourly_wage = 3000
+    if hourly_wage < 0:
+        hourly_wage = 0
+    try:
+        training_cost = int(request.GET.get("training_cost", "0"))
+    except ValueError:
+        training_cost = 0
+    if training_cost < 0:
+        training_cost = 0
     tab = request.GET.get("tab", "time")
     if tab not in ("time", "evaluation"):
         tab = "time"
@@ -80,6 +92,7 @@ def dashboard(request):
     filtered = aggregate.apply_filters(rows, filters)
 
     kpis = aggregate.compute_kpis(filtered, workday_mode)
+    roi = aggregate.compute_roi(kpis["total_annual_hours"], hourly_wage, training_cost)
     by_course = aggregate.group_by(filtered, "course_name", workday_mode)
     by_client = aggregate.group_by(filtered, "client_name", workday_mode)
     trend_day = aggregate.trend_by(filtered, workday_mode, "day")
@@ -136,6 +149,9 @@ def dashboard(request):
     context = {
         "errors": errors,
         "kpis": kpis,
+        "roi": roi,
+        "hourly_wage": hourly_wage,
+        "training_cost": training_cost,
         "by_course": by_course,
         "keywords": keywords,
         "chart_data": chart_data,

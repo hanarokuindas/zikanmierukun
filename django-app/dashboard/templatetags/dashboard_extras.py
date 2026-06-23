@@ -36,6 +36,31 @@ def persondays(hours):
 
 
 @register.filter
+def yen(value):
+    """円の3桁区切り表記。nextjs-app/lib/format.ts の fmtYen と同じ。"""
+    try:
+        return f"{round(float(value)):,}"
+    except (TypeError, ValueError):
+        return "—"
+
+
+@register.filter
+def yenunit(value):
+    """円を万円/億円のざっくり表記に変換。fmtYen の toYenUnit と同じ。"""
+    try:
+        amount = float(value)
+    except (TypeError, ValueError):
+        return ""
+    oku = amount / 100_000_000
+    if abs(oku) >= 1:
+        return f"約 {oku:.2f} 億円"
+    man = amount / 10_000
+    if abs(man) >= 1:
+        return f"約 {man:.1f} 万円"
+    return f"{round(amount):,} 円"
+
+
+@register.filter
 def isin(value, container):
     return value in container
 

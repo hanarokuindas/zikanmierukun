@@ -67,6 +67,25 @@ def compute_kpis(rows, workday_mode):
     }
 
 
+def compute_roi(total_annual_hours, hourly_wage, training_cost):
+    """ROI（投資対効果）を算出する。
+
+    cost_savings : 年間節約時間 × 想定時給 = コスト削減額（円/年）
+    roi_percent  : (削減額 - 研修費用) / 研修費用 × 100。研修費用が0以下ならNone。
+    """
+    wage = hourly_wage or 0
+    cost = training_cost or 0
+    cost_savings = total_annual_hours * wage
+    net_benefit = cost_savings - cost
+    roi_percent = (net_benefit / cost * 100) if cost > 0 else None
+    return {
+        "cost_savings": cost_savings,
+        "training_cost": cost,
+        "net_benefit": net_benefit,
+        "roi_percent": roi_percent,
+    }
+
+
 def group_by(rows, field, workday_mode):
     groups = OrderedDict()
     for r in rows:

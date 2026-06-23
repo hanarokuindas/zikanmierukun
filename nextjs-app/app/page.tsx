@@ -1,11 +1,11 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { SurveyResponse, WorkdayMode, DashboardFilters, UsageType } from "@/lib/types";
+import { SurveyResponse, WorkdayMode, DashboardFilters, UsageType, RoiSettings } from "@/lib/types";
 import { parseCsv } from "@/lib/parseCsv";
 import { generateSampleData } from "@/lib/sampleData";
-import { applyFilters, computeKpis } from "@/lib/aggregate";
-import { fmtHours, fmtDecimal, toPersonDays } from "@/lib/format";
+import { applyFilters, computeKpis, computeRoi } from "@/lib/aggregate";
+import { fmtHours, fmtDecimal, toPersonDays, fmtYen, toYenUnit } from "@/lib/format";
 import { Filters } from "@/components/Filters";
 import { TimeTab } from "@/components/TimeTab";
 import { EvaluationTab } from "@/components/EvaluationTab";
@@ -18,6 +18,7 @@ export default function Home() {
   const [errors, setErrors] = useState<string[]>([]);
   const [tab, setTab] = useState<TabKey>("time");
   const [workdayMode, setWorkdayMode] = useState<WorkdayMode>(260);
+  const [roi, setRoi] = useState<RoiSettings>({ hourlyWage: 3000, trainingCost: 0 });
   const [filters, setFilters] = useState<DashboardFilters>({
     clients: [],
     courses: [],
@@ -41,6 +42,10 @@ export default function Home() {
   const kpis = useMemo(
     () => computeKpis(filtered, workdayMode),
     [filtered, workdayMode]
+  );
+  const roiResult = useMemo(
+    () => computeRoi(kpis.totalAnnualHours, roi),
+    [kpis.totalAnnualHours, roi]
   );
 
   const hasData = rows.length > 0;
@@ -79,6 +84,33 @@ export default function Home() {
                 </div>
               </label>
               <label>
+                想定時給（円）
+                <input
+                  type="number"
+                  className="roi-input"
+                  min={0}
+                  step={100}
+                  value={roi.hourlyWage}
+                  onChange={(e) =>
+                    setRoi((r) => ({ ...r, hourlyWage: Number(e.target.value) || 0 }))
+                  }
+                />
+              </label>
+              <label>
+                研修費用（円・任意）
+                <input
+                  type="number"
+                  className="roi-input"
+                  min={0}
+                  step={10000}
+                  placeholder="ROI%算出に使用"
+                  value={roi.trainingCost || ""}
+                  onChange={(e) =>
+                    setRoi((r) => ({ ...r, trainingCost: Number(e.target.value) || 0 }))
+                  }
+                />
+              </label>
+              <label>
                 データ操作
                 <button className="btn" onClick={() => setRows([])}>
                   別のCSVを読み込む
@@ -106,6 +138,34 @@ export default function Home() {
                 </div>
                 <div className="muted" style={{ fontSize: 12, marginTop: 4 }}>
                   {toPersonDays(kpis.totalAnnualHours)}
+                </div>
+              </div>
+              <div className="kpi-card kpi-card-highlight">
+                <div className="label">コスト削減額（年間換算）</div>
+                <div className="value">
+                  {fmtYen(roiResult.costSavings)}
+                  <span className="unit">円/年</span>
+                </div>
+                <div className="muted" style={{ fontSize: 12, marginTop: 4 }}>
+                  {toYenUnit(roiResult.costSavings)}（時給 {fmtYen(roi.hourlyWage)} 円換算）
+                </div>
+              </div>
+              <div className="kpi-card kpi-card-highlight">
+                <div className="label">ROI（投資対効果）</div>
+                <div className="value">
+                  {roiResult.roiPercent == null ? (
+                    "—"
+                  ) : (
+                    <>
+                      {Math.round(roiResult.roiPercent).toLocaleString("ja-JP")}
+                      <span className="unit">%</span>
+                    </>
+                  )}
+                </div>
+                <div className="muted" style={{ fontSize: 12, marginTop: 4 }}>
+                  {roiResult.roiPercent == null
+                    ? "研修費用を入力すると算出されます"
+                    : `純便益 ${toYenUnit(roiResult.netBenefit)}`}
                 </div>
               </div>
               <div className="kpi-card">

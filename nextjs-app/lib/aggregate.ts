@@ -1,4 +1,4 @@
-import { SurveyResponse, WorkdayMode, DashboardFilters } from "./types";
+import { SurveyResponse, WorkdayMode, DashboardFilters, RoiSettings } from "./types";
 
 // 時間値を「年間時間」に換算する。
 // - 月あたり → ×12
@@ -86,6 +86,28 @@ export function computeKpis(
     avgComprehension: comprehension,
     nps,
   };
+}
+
+// ROI（投資対効果）の算出
+// costSavings : 年間節約時間 × 想定時給 = コスト削減額（円/年）
+// roiPercent  : (削減額 - 研修費用) / 研修費用 × 100。研修費用が未入力(0以下)ならnull。
+export interface RoiResult {
+  costSavings: number;
+  trainingCost: number;
+  netBenefit: number; // 削減額 - 研修費用
+  roiPercent: number | null;
+}
+
+export function computeRoi(
+  totalAnnualHours: number,
+  settings: RoiSettings
+): RoiResult {
+  const wage = Number.isFinite(settings.hourlyWage) ? settings.hourlyWage : 0;
+  const cost = Number.isFinite(settings.trainingCost) ? settings.trainingCost : 0;
+  const costSavings = totalAnnualHours * wage;
+  const netBenefit = costSavings - cost;
+  const roiPercent = cost > 0 ? (netBenefit / cost) * 100 : null;
+  return { costSavings, trainingCost: cost, netBenefit, roiPercent };
 }
 
 // グループ別集計（講座別・クライアント別など）

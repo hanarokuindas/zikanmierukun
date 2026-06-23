@@ -75,10 +75,25 @@ body {
   padding: 18px 20px;
 }
 
+.kpi-card-highlight {
+  background: var(--primary-light, #eef4ff);
+  border-color: var(--primary);
+}
+
 .kpi-card .label {
   color: var(--muted);
   font-size: 12px;
   margin-bottom: 6px;
+}
+
+.roi-input {
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 13px;
+  background: #fff;
+  color: var(--text);
+  width: 140px;
 }
 
 .kpi-card .value {

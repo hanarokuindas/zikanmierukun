@@ -7,6 +7,20 @@ export function fmtDecimal(n: number | null, digits = 1): string {
   return n.toFixed(digits);
 }
 
+// 金額（円）。大きな額は万円・億円で読みやすく補助表記する。
+export function fmtYen(amount: number): string {
+  return Math.round(amount).toLocaleString("ja-JP");
+}
+
+// 円を「万円 / 億円」のざっくり表記に変換（補助ラベル用）
+export function toYenUnit(amount: number): string {
+  const oku = amount / 100_000_000;
+  if (Math.abs(oku) >= 1) return `約 ${oku.toFixed(2)} 億円`;
+  const man = amount / 10_000;
+  if (Math.abs(man) >= 1) return `約 ${man.toFixed(1)} 万円`;
+  return `${fmtYen(amount)} 円`;
+}
+
 // 大きな時間を「人日（8h）/人月(160h)」換算で補助表示
 export function toPersonDays(hours: number): string {
   const days = hours / 8;

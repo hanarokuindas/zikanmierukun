@@ -24,6 +24,14 @@ export interface SurveyResponse {
 // 年間換算モード（プライベート利用を想定した365日か、勤務日260日か）
 export type WorkdayMode = 365 | 260;
 
+// ROI（投資対効果）設定
+// hourlyWage: 受講者の想定時給（円）。節約時間を金額換算する係数。
+// trainingCost: 研修にかかった費用（円）。ROI% 算出に使う（0なら未入力扱い）。
+export interface RoiSettings {
+  hourlyWage: number;
+  trainingCost: number;
+}
+
 // フィルタ条件
 export interface DashboardFilters {
   clients: string[]; // 空配列なら全件

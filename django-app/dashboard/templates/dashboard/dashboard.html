@@ -73,6 +73,16 @@
           <button type="submit" name="workday_mode" value="365" class="{% if workday_mode == 365 %}active{% endif %}">全日 (365日)</button>
         </div>
       </label>
+
+      <label>
+        想定時給（円）
+        <input type="number" class="roi-input" name="hourly_wage" min="0" step="100" value="{{ hourly_wage }}" onchange="this.form.submit()" />
+      </label>
+
+      <label>
+        研修費用（円・任意）
+        <input type="number" class="roi-input" name="training_cost" min="0" step="10000" placeholder="ROI%算出に使用" value="{% if training_cost %}{{ training_cost }}{% endif %}" onchange="this.form.submit()" />
+      </label>
     </div>
   </form>
 
@@ -102,6 +112,16 @@
       <div class="label">総節約時間（年間換算・全体）</div>
       <div class="value">{{ kpis.total_annual_hours|jpnum }}<span class="unit">時間/年</span></div>
       <div class="muted" style="font-size: 12px; margin-top: 4px">{{ kpis.total_annual_hours|persondays }}</div>
+    </div>
+    <div class="kpi-card kpi-card-highlight">
+      <div class="label">コスト削減額（年間換算）</div>
+      <div class="value">{{ roi.cost_savings|yen }}<span class="unit">円/年</span></div>
+      <div class="muted" style="font-size: 12px; margin-top: 4px">{{ roi.cost_savings|yenunit }}（時給 {{ hourly_wage|yen }} 円換算）</div>
+    </div>
+    <div class="kpi-card kpi-card-highlight">
+      <div class="label">ROI（投資対効果）</div>
+      <div class="value">{% if roi.roi_percent == None %}—{% else %}{{ roi.roi_percent|floatformat:0 }}<span class="unit">%</span>{% endif %}</div>
+      <div class="muted" style="font-size: 12px; margin-top: 4px">{% if roi.roi_percent == None %}研修費用を入力すると算出されます{% else %}純便益 {{ roi.net_benefit|yenunit }}{% endif %}</div>
     </div>
     <div class="kpi-card">
       <div class="label">1人あたり平均節約時間</div>
