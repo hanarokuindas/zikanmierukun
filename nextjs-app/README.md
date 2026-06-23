@@ -32,6 +32,14 @@ npm run build  # 本番ビルド
 
 `public/sample.csv` にサンプルCSVがあります。アプリ起動後「サンプルデータで試す」ボタンでも動作確認できます。
 
+## オンラインで確認する（GitHub Pages）
+
+`claude/affectionate-feynman-a6ibyf` ブランチ（または `main`）に `nextjs-app/` の変更がプッシュされると、GitHub Actions（`.github/workflows/deploy-pages.yml`）が自動でビルドし、GitHub Pagesに公開します。ZIPダウンロードやローカル環境のセットアップなしに、ブラウザでURLを開くだけで最新の動作を確認できます。
+
+公開URL: `https://<GitHubユーザー名>.github.io/zikanmierukun/`
+
+初回のみ、リポジトリの Settings → Pages で「Source: GitHub Actions」に設定してください。
+
 ## CSVフォーマット
 
 共通仕様は [`docs/csv-format.md`](../docs/csv-format.md) を参照してください。
