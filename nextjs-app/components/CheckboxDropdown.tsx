@@ -51,14 +51,9 @@ export function CheckboxDropdown({ label, options, selected, onChange }: Props) 
       </button>
       {open && (
         <div className="checkbox-dropdown-panel">
-          <div className="checkbox-dropdown-actions">
-            <button type="button" onClick={() => onChange([])}>
-              すべて解除
-            </button>
-            <button type="button" onClick={() => onChange(options)}>
-              すべて選択
-            </button>
-          </div>
+          <p className="checkbox-dropdown-hint">
+            未選択の場合はすべて表示されます。絞り込みたい項目だけチェックしてください。
+          </p>
           <ul>
             {options.map((opt) => (
               <li key={opt}>
@@ -68,11 +63,20 @@ export function CheckboxDropdown({ label, options, selected, onChange }: Props) 
                     checked={selected.includes(opt)}
                     onChange={() => toggle(opt)}
                   />
-                  {opt}
+                  <span>{opt}</span>
                 </label>
               </li>
             ))}
           </ul>
+          {selected.length > 0 && (
+            <button
+              type="button"
+              className="checkbox-dropdown-clear"
+              onClick={() => onChange([])}
+            >
+              選択をクリア（すべて表示）
+            </button>
+          )}
         </div>
       )}
     </div>

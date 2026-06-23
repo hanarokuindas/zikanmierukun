@@ -14,20 +14,20 @@
           <span class="checkbox-dropdown-caret">▾</span>
         </button>
         <div class="checkbox-dropdown-panel">
-          <div class="checkbox-dropdown-actions">
-            <button type="button" data-dropdown-clear>すべて解除</button>
-            <button type="button" data-dropdown-all>すべて選択</button>
-          </div>
+          <p class="checkbox-dropdown-hint">未選択の場合はすべて表示されます。絞り込みたい項目だけチェックしてください。</p>
           <ul>
             {% for c in all_clients %}
               <li>
                 <label>
                   <input type="checkbox" name="clients" value="{{ c }}" {% if c in selected_clients %}checked{% endif %} onchange="this.form.submit()" />
-                  {{ c }}
+                  <span>{{ c }}</span>
                 </label>
               </li>
             {% endfor %}
           </ul>
+          {% if selected_clients %}
+            <button type="button" class="checkbox-dropdown-clear" data-dropdown-clear>選択をクリア（すべて表示）</button>
+          {% endif %}
         </div>
       </div>
 
@@ -40,20 +40,20 @@
           <span class="checkbox-dropdown-caret">▾</span>
         </button>
         <div class="checkbox-dropdown-panel">
-          <div class="checkbox-dropdown-actions">
-            <button type="button" data-dropdown-clear>すべて解除</button>
-            <button type="button" data-dropdown-all>すべて選択</button>
-          </div>
+          <p class="checkbox-dropdown-hint">未選択の場合はすべて表示されます。絞り込みたい項目だけチェックしてください。</p>
           <ul>
             {% for c in all_courses %}
               <li>
                 <label>
                   <input type="checkbox" name="courses" value="{{ c }}" {% if c in selected_courses %}checked{% endif %} onchange="this.form.submit()" />
-                  {{ c }}
+                  <span>{{ c }}</span>
                 </label>
               </li>
             {% endfor %}
           </ul>
+          {% if selected_courses %}
+            <button type="button" class="checkbox-dropdown-clear" data-dropdown-clear>選択をクリア（すべて表示）</button>
+          {% endif %}
         </div>
       </div>
 

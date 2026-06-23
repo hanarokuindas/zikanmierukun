@@ -250,22 +250,14 @@ select[multiple] {
   padding: 8px;
 }
 
-.checkbox-dropdown-actions {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 6px;
+.checkbox-dropdown-hint {
+  margin: 0 0 6px;
   padding-bottom: 6px;
   border-bottom: 1px solid var(--border);
-}
-
-.checkbox-dropdown-actions button {
   font-size: 11px;
-  border: none;
-  background: var(--primary-light);
-  color: var(--primary);
-  padding: 4px 8px;
-  border-radius: 6px;
-  cursor: pointer;
+  color: var(--muted);
+  line-height: 1.4;
+  white-space: normal;
 }
 
 .checkbox-dropdown-panel ul {
@@ -276,13 +268,42 @@ select[multiple] {
 
 .checkbox-dropdown-panel li label {
   display: flex;
+  flex-direction: row;
   align-items: center;
-  gap: 6px;
-  padding: 4px 4px;
+  justify-content: flex-start;
+  gap: 8px;
+  width: 100%;
+  padding: 6px 8px;
+  border-radius: 6px;
   font-size: 13px;
   color: var(--text);
   cursor: pointer;
   white-space: nowrap;
+}
+
+.checkbox-dropdown-panel li label:hover {
+  background: var(--primary-light);
+}
+
+.checkbox-dropdown-panel li label input {
+  margin: 0;
+  flex-shrink: 0;
+}
+
+.checkbox-dropdown-clear {
+  margin-top: 6px;
+  width: 100%;
+  border: 1px solid var(--border);
+  background: #fff;
+  color: var(--primary);
+  padding: 6px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.checkbox-dropdown-clear:hover {
+  background: var(--primary-light);
 }
 
 .dropzone {

@@ -112,7 +112,6 @@ function initCheckboxDropdowns() {
     const trigger = dropdown.querySelector(".checkbox-dropdown-trigger");
     const panel = dropdown.querySelector(".checkbox-dropdown-panel");
     const clearBtn = dropdown.querySelector("[data-dropdown-clear]");
-    const allBtn = dropdown.querySelector("[data-dropdown-all]");
     if (!trigger || !panel) return;
 
     trigger.addEventListener("click", (e) => {
@@ -122,16 +121,11 @@ function initCheckboxDropdowns() {
       if (!isOpen) panel.classList.add("open");
     });
 
+    panel.addEventListener("click", (e) => e.stopPropagation());
+
     clearBtn?.addEventListener("click", () => {
       panel.querySelectorAll('input[type="checkbox"]').forEach((cb) => {
         if (cb.checked) cb.checked = false;
-      });
-      trigger.closest("form")?.submit();
-    });
-
-    allBtn?.addEventListener("click", () => {
-      panel.querySelectorAll('input[type="checkbox"]').forEach((cb) => {
-        cb.checked = true;
       });
       trigger.closest("form")?.submit();
     });
