@@ -1,0 +1,179 @@
+{% extends "dashboard/base.html" %}
+{% load dashboard_extras %}
+{% block content %}
+
+  <form id="filter-form" method="get" action="{% url 'dashboard:dashboard' %}">
+    <input type="hidden" name="tab" id="tab-input" value="{{ tab }}" />
+    <div class="toolbar">
+      <label>
+        クライアント（複数選択可）
+        <select name="clients" multiple onchange="this.form.submit()">
+          {% for c in all_clients %}
+            <option value="{{ c }}" {% if c in selected_clients %}selected{% endif %}>{{ c }}</option>
+          {% endfor %}
+        </select>
+      </label>
+
+      <label>
+        講座（複数選択可）
+        <select name="courses" multiple onchange="this.form.submit()">
+          {% for c in all_courses %}
+            <option value="{{ c }}" {% if c in selected_courses %}selected{% endif %}>{{ c }}</option>
+          {% endfor %}
+        </select>
+      </label>
+
+      <label>
+        用途
+        <select name="usage_type" onchange="this.form.submit()">
+          <option value="" {% if not usage_type %}selected{% endif %}>すべて</option>
+          <option value="業務" {% if usage_type == "業務" %}selected{% endif %}>業務</option>
+          <option value="プライベート" {% if usage_type == "プライベート" %}selected{% endif %}>プライベート</option>
+        </select>
+      </label>
+
+      <label>
+        日あたり業務利用の年間換算
+        <div class="toggle-group">
+          <button type="submit" name="workday_mode" value="260" class="{% if workday_mode == 260 %}active{% endif %}">勤務日 (260日)</button>
+          <button type="submit" name="workday_mode" value="365" class="{% if workday_mode == 365 %}active{% endif %}">全日 (365日)</button>
+        </div>
+      </label>
+    </div>
+  </form>
+
+  <div class="toolbar">
+    <label>
+      データ操作
+      <form method="post" action="{% url 'dashboard:clear' %}">
+        {% csrf_token %}
+        <button type="submit" class="btn">別のCSVを読み込む</button>
+      </form>
+    </label>
+  </div>
+
+  {% if errors %}
+    <div class="error-box">
+      <strong>読み込み時の注意 ({{ errors|length }}件):</strong>
+      <ul style="margin: 6px 0 0; padding-left: 18px">
+        {% for e in errors|slice:":5" %}
+          <li>{{ e }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% endif %}
+
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="label">総節約時間（年間換算・全体）</div>
+      <div class="value">{{ kpis.total_annual_hours|jpnum }}<span class="unit">時間/年</span></div>
+      <div class="muted" style="font-size: 12px; margin-top: 4px">{{ kpis.total_annual_hours|persondays }}</div>
+    </div>
+    <div class="kpi-card">
+      <div class="label">1人あたり平均節約時間</div>
+      <div class="value">{{ kpis.avg_annual_hours_per_person|jpnum }}<span class="unit">時間/年</span></div>
+    </div>
+    <div class="kpi-card">
+      <div class="label">回答件数（サンプル数）</div>
+      <div class="value">{{ kpis.response_count }}<span class="unit">件</span></div>
+    </div>
+    <div class="kpi-card">
+      <div class="label">平均満足度</div>
+      <div class="value">{{ kpis.avg_satisfaction|decimal1 }}<span class="unit">/ 5</span></div>
+    </div>
+    <div class="kpi-card">
+      <div class="label">NPS（推奨度）</div>
+      <div class="value">{% if kpis.nps == None %}—{% else %}{{ kpis.nps|floatformat:0 }}{% endif %}</div>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button type="button" class="tab {% if tab == 'time' %}active{% endif %}" data-tab="time">時間効果</button>
+    <button type="button" class="tab {% if tab == 'evaluation' %}active{% endif %}" data-tab="evaluation">講座評価</button>
+  </div>
+
+  {% if not has_filtered_rows %}
+    <p class="muted">条件に合うデータがありません。</p>
+  {% else %}
+    <div class="tab-panel" data-tab="time" style="{% if tab != 'time' %}display:none{% endif %}">
+      <div class="chart-grid">
+        <div class="card chart-card">
+          <h3>講座別 総節約時間（年間換算）</h3>
+          <canvas id="courseBarChart" height="280"></canvas>
+        </div>
+        <div class="card chart-card">
+          <h3>クライアント別 総節約時間（年間換算）</h3>
+          <canvas id="clientBarChart" height="280"></canvas>
+        </div>
+        <div class="card chart-card" style="grid-column: 1 / -1">
+          <h3>月別 節約時間トレンド（回答日ベース）</h3>
+          <canvas id="trendLineChart" height="280"></canvas>
+        </div>
+        <div class="card chart-card" style="grid-column: 1 / -1">
+          <h3>講座別 サマリー</h3>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>講座</th>
+                <th>回答数</th>
+                <th>総節約時間(年)</th>
+                <th>1人あたり(年)</th>
+                <th>平均満足度</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for g in by_course %}
+                <tr>
+                  <td>{{ g.key }}</td>
+                  <td>{{ g.count }}</td>
+                  <td>{{ g.total_annual_hours|jpnum }} 時間</td>
+                  <td>{{ g.avg_annual_hours|jpnum }} 時間</td>
+                  <td>{{ g.avg_satisfaction|decimal1 }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-panel" data-tab="evaluation" style="{% if tab != 'evaluation' %}display:none{% endif %}">
+      <div class="chart-grid">
+        <div class="card chart-card">
+          <h3>満足度の分布</h3>
+          <canvas id="satBarChart" height="240"></canvas>
+        </div>
+        <div class="card chart-card">
+          <h3>理解度の分布</h3>
+          <canvas id="compBarChart" height="240"></canvas>
+        </div>
+        <div class="card chart-card">
+          <h3>NPS内訳（推奨度）{% if chart_data.npsBreakdown.nps != None %} / NPS: {{ chart_data.npsBreakdown.nps|floatformat:0 }}{% endif %}</h3>
+          <canvas id="npsPieChart" height="240"></canvas>
+        </div>
+        <div class="card chart-card">
+          <h3>実践予定</h3>
+          <canvas id="applyPieChart" height="240"></canvas>
+        </div>
+        <div class="card chart-card">
+          <h3>難易度の分布</h3>
+          <canvas id="diffBarChart" height="240"></canvas>
+        </div>
+        <div class="card chart-card">
+          <h3>自由記述の頻出キーワード</h3>
+          {% if not keywords %}
+            <p class="muted">自由記述データがありません。</p>
+          {% else %}
+            <div class="tag-cloud">
+              {% for k in keywords %}
+                <span class="tag" style="font-size: {{ k.count|tagsize }}px">{{ k.word }} ({{ k.count }})</span>
+              {% endfor %}
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+  {{ chart_data|json_script:"chart-data" }}
+{% endblock %}

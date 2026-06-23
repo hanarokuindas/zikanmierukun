@@ -1,0 +1,25 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>時間見えるくん | IT講座 効果可視化ダッシュボード</title>
+    <link rel="stylesheet" href="{% static 'dashboard/style.css' %}" />
+  </head>
+  <body>
+    <header class="app-header">
+      <div class="container">
+        <h1>⏱ 時間見えるくん</h1>
+        <p>IT講座の事後アンケートから、節約・効率化できた時間と講座評価を可視化します</p>
+      </div>
+    </header>
+
+    <main class="container">
+      {% block content %}{% endblock %}
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+    <script src="{% static 'dashboard/app.js' %}"></script>
+  </body>
+</html>

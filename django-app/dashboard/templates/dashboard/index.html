@@ -1,0 +1,61 @@
+{% extends "dashboard/base.html" %}
+{% load static %}
+{% block content %}
+  <div class="card" style="margin-top: 20px">
+    <h2 style="margin-top: 0">アンケートCSVをアップロード</h2>
+    <p class="muted">
+      Googleフォーム等から出力したアンケート回答のCSVを読み込みます。
+      列名は日本語・英語どちらにも対応しています（例: 講座名 / course_name）。
+    </p>
+
+    <form id="upload-form" method="post" action="{% url 'dashboard:upload' %}" enctype="multipart/form-data">
+      {% csrf_token %}
+      <div class="dropzone" id="dropzone">
+        <p style="margin: 0; font-weight: 600">📁 ここにCSVファイルをドラッグ＆ドロップ</p>
+        <p class="muted" style="margin: 6px 0 0">またはクリックしてファイルを選択</p>
+        <input type="file" name="csv_file" id="csv-input" accept=".csv,text/csv" style="display: none" />
+      </div>
+    </form>
+
+    <div style="margin-top: 16px">
+      <form method="post" action="{% url 'dashboard:sample' %}" style="display: inline">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-primary">サンプルデータで試す</button>
+      </form>
+      <a href="{% static 'dashboard/sample.csv' %}" class="btn" style="margin-left: 8px" download>サンプルCSVをダウンロード</a>
+    </div>
+
+    {% if errors %}
+      <div class="error-box">
+        {% for e in errors|slice:":5" %}
+          <div>{{ e }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <details style="margin-top: 20px">
+      <summary class="muted" style="cursor: pointer">CSVの推奨フォーマットを見る</summary>
+      <table class="data-table" style="margin-top: 10px">
+        <thead>
+          <tr>
+            <th>列名</th>
+            <th>説明</th>
+            <th>例</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>course_name / 講座名</td><td>講座名</td><td>Excel自動化基礎講座</td></tr>
+          <tr><td>client_name / クライアント名</td><td>企業名</td><td>株式会社ABC</td></tr>
+          <tr><td>answered_at / 回答日</td><td>回答日</td><td>2026-06-01</td></tr>
+          <tr><td>time_unit / 時間単位</td><td>月/日/年あたり</td><td>月</td></tr>
+          <tr><td>time_value / 時間</td><td>節約時間(数値)</td><td>5</td></tr>
+          <tr><td>usage_type / 用途</td><td>業務/プライベート</td><td>業務</td></tr>
+          <tr><td>satisfaction_score / 満足度</td><td>1〜5</td><td>5</td></tr>
+          <tr><td>comprehension_score / 理解度</td><td>1〜5</td><td>4</td></tr>
+          <tr><td>nps_score / 推奨度</td><td>0〜10</td><td>9</td></tr>
+          <tr><td>free_comment / 自由記述</td><td>コメント</td><td>作業が早くなった</td></tr>
+        </tbody>
+      </table>
+    </details>
+  </div>
+{% endblock %}

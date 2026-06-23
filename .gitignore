@@ -1,9 +1,23 @@
-/node_modules
-/.next/
-/out/
-/build
-*.tsbuildinfo
-next-env.d.ts
+# Next.js (nextjs-app/)
+nextjs-app/node_modules
+nextjs-app/.next/
+nextjs-app/out/
+nextjs-app/build
+nextjs-app/*.tsbuildinfo
+nextjs-app/next-env.d.ts
+nextjs-app/.vercel
+
+# Django (django-app/)
+django-app/venv/
+django-app/.venv/
+django-app/__pycache__/
+django-app/**/__pycache__/
+django-app/**/*.pyc
+django-app/db.sqlite3
+django-app/staticfiles/
+django-app/media/
+
+# common
 .DS_Store
 .env*.local
-.vercel
+*.log
