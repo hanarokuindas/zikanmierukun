@@ -82,7 +82,9 @@ def dashboard(request):
     kpis = aggregate.compute_kpis(filtered, workday_mode)
     by_course = aggregate.group_by(filtered, "course_name", workday_mode)
     by_client = aggregate.group_by(filtered, "client_name", workday_mode)
-    trend = aggregate.trend_by_month(filtered, workday_mode)
+    trend_day = aggregate.trend_by(filtered, workday_mode, "day")
+    trend_month = aggregate.trend_by(filtered, workday_mode, "month")
+    trend_year = aggregate.trend_by(filtered, workday_mode, "year")
     sat_dist = aggregate.score_distribution(filtered, "satisfaction_score", 5)
     comp_dist = aggregate.score_distribution(filtered, "comprehension_score", 5)
     diff_dist = aggregate.score_distribution(filtered, "difficulty_level", 5)
@@ -110,14 +112,20 @@ def dashboard(request):
             }
             for g in by_client
         ],
-        "trend": [
-            {
-                "month": p["month"],
-                "totalAnnualHours": p["total_annual_hours"],
-                "count": p["count"],
-            }
-            for p in trend
-        ],
+        "trendByGranularity": {
+            "day": [
+                {"month": p["month"], "totalAnnualHours": p["total_annual_hours"], "count": p["count"]}
+                for p in trend_day
+            ],
+            "month": [
+                {"month": p["month"], "totalAnnualHours": p["total_annual_hours"], "count": p["count"]}
+                for p in trend_month
+            ],
+            "year": [
+                {"month": p["month"], "totalAnnualHours": p["total_annual_hours"], "count": p["count"]}
+                for p in trend_year
+            ],
+        },
         "satDist": sat_dist,
         "compDist": comp_dist,
         "diffDist": diff_dist,

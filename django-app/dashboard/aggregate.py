@@ -77,6 +77,10 @@ def group_by(rows, field, workday_mode):
     for key, group in groups.items():
         total = sum(to_annual_hours(r, workday_mode) for r in group)
         sat = _avg([r.get("satisfaction_score") for r in group])
+        comp = _avg([r.get("comprehension_score") for r in group])
+        nps = calc_nps([r.get("nps_score") for r in group])
+        diff = _avg([r.get("difficulty_level") for r in group])
+        inst = _avg([r.get("instructor_score") for r in group])
         result.append(
             {
                 "key": key,
@@ -84,28 +88,40 @@ def group_by(rows, field, workday_mode):
                 "count": len(group),
                 "avg_annual_hours": (total / len(group)) if group else 0,
                 "avg_satisfaction": sat,
+                "avg_comprehension": comp,
+                "avg_nps": nps,
+                "avg_difficulty": diff,
+                "avg_instructor": inst,
             }
         )
     result.sort(key=lambda g: g["total_annual_hours"], reverse=True)
     return result
 
 
-def trend_by_month(rows, workday_mode):
-    months = OrderedDict()
+_TREND_KEY_LEN = {"day": 10, "month": 7, "year": 4}
+
+
+def trend_by(rows, workday_mode, granularity="month"):
+    key_len = _TREND_KEY_LEN.get(granularity, 7)
+    buckets = OrderedDict()
     for r in rows:
-        month = (r.get("answered_at") or "")[:7]
-        if not month:
+        key = (r.get("answered_at") or "")[:key_len]
+        if not key:
             continue
-        e = months.setdefault(month, {"total": 0, "count": 0})
+        e = buckets.setdefault(key, {"total": 0, "count": 0})
         e["total"] += to_annual_hours(r, workday_mode)
         e["count"] += 1
 
     points = [
         {"month": m, "total_annual_hours": v["total"], "count": v["count"]}
-        for m, v in months.items()
+        for m, v in buckets.items()
     ]
     points.sort(key=lambda p: p["month"])
     return points
+
+
+def trend_by_month(rows, workday_mode):
+    return trend_by(rows, workday_mode, "month")
 
 
 def score_distribution(rows, field, max_score):

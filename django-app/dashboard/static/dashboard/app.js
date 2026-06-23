@@ -68,7 +68,7 @@ function hbar(canvasId, labels, values, color, label) {
   });
 }
 
-function vbar(canvasId, labels, values, color, label) {
+function vbar(canvasId, labels, values, color, label, xTitle, yTitle) {
   const el = document.getElementById(canvasId);
   if (!el) return;
   new Chart(el, {
@@ -79,7 +79,10 @@ function vbar(canvasId, labels, values, color, label) {
     },
     options: {
       plugins: { legend: { display: false } },
-      scales: { y: { beginAtZero: true, ticks: { precision: 0 } } },
+      scales: {
+        x: { title: { display: !!xTitle, text: xTitle || "" } },
+        y: { beginAtZero: true, ticks: { precision: 0 }, title: { display: !!yTitle, text: yTitle || "" } },
+      },
     },
   });
 }
@@ -102,6 +105,115 @@ function pie(canvasId, labels, values) {
   });
 }
 
+// クライアント／講座のチェック付きドロップダウンの開閉
+function initCheckboxDropdowns() {
+  const dropdowns = document.querySelectorAll("[data-checkbox-dropdown]");
+  dropdowns.forEach((dropdown) => {
+    const trigger = dropdown.querySelector(".checkbox-dropdown-trigger");
+    const panel = dropdown.querySelector(".checkbox-dropdown-panel");
+    const clearBtn = dropdown.querySelector("[data-dropdown-clear]");
+    const allBtn = dropdown.querySelector("[data-dropdown-all]");
+    if (!trigger || !panel) return;
+
+    trigger.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const isOpen = panel.classList.contains("open");
+      dropdowns.forEach((d) => d.querySelector(".checkbox-dropdown-panel").classList.remove("open"));
+      if (!isOpen) panel.classList.add("open");
+    });
+
+    clearBtn?.addEventListener("click", () => {
+      panel.querySelectorAll('input[type="checkbox"]').forEach((cb) => {
+        if (cb.checked) cb.checked = false;
+      });
+      trigger.closest("form")?.submit();
+    });
+
+    allBtn?.addEventListener("click", () => {
+      panel.querySelectorAll('input[type="checkbox"]').forEach((cb) => {
+        cb.checked = true;
+      });
+      trigger.closest("form")?.submit();
+    });
+  });
+
+  document.addEventListener("click", () => {
+    dropdowns.forEach((d) => d.querySelector(".checkbox-dropdown-panel").classList.remove("open"));
+  });
+}
+
+const GRANULARITY_LABELS = { day: "日次", month: "月次", year: "年次" };
+
+function renderTrendChart(trendChartRef, points) {
+  const trendEl = document.getElementById("trendLineChart");
+  if (!trendEl) return trendChartRef;
+  if (trendChartRef.chart) {
+    trendChartRef.chart.destroy();
+  }
+  trendChartRef.chart = new Chart(trendEl, {
+    type: "line",
+    data: {
+      labels: points.map((d) => d.month),
+      datasets: [
+        {
+          label: "総節約時間(年間換算)",
+          data: points.map((d) => d.totalAnnualHours),
+          borderColor: CHART_COLORS.blue,
+          yAxisID: "y",
+          tension: 0.2,
+        },
+        {
+          label: "回答件数",
+          data: points.map((d) => d.count),
+          borderColor: CHART_COLORS.gray,
+          yAxisID: "y1",
+          tension: 0.2,
+        },
+      ],
+    },
+    options: {
+      scales: {
+        y: {
+          type: "linear",
+          position: "left",
+          beginAtZero: true,
+          title: { display: true, text: "時間/年" },
+        },
+        y1: {
+          type: "linear",
+          position: "right",
+          beginAtZero: true,
+          grid: { drawOnChartArea: false },
+          ticks: { precision: 0 },
+          title: { display: true, text: "件数" },
+        },
+      },
+    },
+  });
+  return trendChartRef;
+}
+
+function initTrendGranularityToggle(data) {
+  const toggle = document.getElementById("trend-granularity-toggle");
+  const caption = document.getElementById("trend-caption");
+  if (!toggle || !data.trendByGranularity) return;
+
+  const trendChartRef = {};
+  renderTrendChart(trendChartRef, data.trendByGranularity.month || []);
+
+  const buttons = toggle.querySelectorAll("button[data-granularity]");
+  buttons.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const g = btn.dataset.granularity;
+      buttons.forEach((b) => b.classList.toggle("active", b === btn));
+      renderTrendChart(trendChartRef, data.trendByGranularity[g] || []);
+      if (caption) {
+        caption.textContent = `回答日を${GRANULARITY_LABELS[g]}単位で集計しています。青線は年間換算した節約時間の合計、グレー線は回答件数です。`;
+      }
+    });
+  });
+}
+
 function initCharts(data) {
   hbar(
     "courseBarChart",
@@ -118,64 +230,34 @@ function initCharts(data) {
     "総節約時間(年間換算)"
   );
 
-  const trendEl = document.getElementById("trendLineChart");
-  if (trendEl) {
-    new Chart(trendEl, {
-      type: "line",
-      data: {
-        labels: data.trend.map((d) => d.month),
-        datasets: [
-          {
-            label: "総節約時間(年間換算)",
-            data: data.trend.map((d) => d.totalAnnualHours),
-            borderColor: CHART_COLORS.blue,
-            yAxisID: "y",
-            tension: 0.2,
-          },
-          {
-            label: "回答件数",
-            data: data.trend.map((d) => d.count),
-            borderColor: CHART_COLORS.gray,
-            yAxisID: "y1",
-            tension: 0.2,
-          },
-        ],
-      },
-      options: {
-        scales: {
-          y: { type: "linear", position: "left", beginAtZero: true },
-          y1: {
-            type: "linear",
-            position: "right",
-            beginAtZero: true,
-            grid: { drawOnChartArea: false },
-            ticks: { precision: 0 },
-          },
-        },
-      },
-    });
-  }
+  initTrendGranularityToggle(data);
 
   vbar(
     "satBarChart",
     data.satDist.map((d) => d.score),
     data.satDist.map((d) => d.count),
     CHART_COLORS.blue,
-    "回答数"
+    "回答数",
+    "満足度",
+    "件数"
   );
   vbar(
     "compBarChart",
     data.compDist.map((d) => d.score),
     data.compDist.map((d) => d.count),
     CHART_COLORS.sky,
-    "回答数"
+    "回答数",
+    "理解度",
+    "件数"
   );
   vbar(
     "diffBarChart",
     data.diffDist.map((d) => d.score),
     data.diffDist.map((d) => d.count),
     CHART_COLORS.amber,
-    "回答数"
+    "回答数",
+    "難易度",
+    "件数"
   );
 
   if (data.npsBreakdown.data.length) {
@@ -197,6 +279,7 @@ function initCharts(data) {
 document.addEventListener("DOMContentLoaded", () => {
   initDropzone();
   initTabs();
+  initCheckboxDropdowns();
   const dataEl = document.getElementById("chart-data");
   if (dataEl) {
     const data = JSON.parse(dataEl.textContent);

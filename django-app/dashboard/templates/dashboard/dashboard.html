@@ -5,23 +5,57 @@
   <form id="filter-form" method="get" action="{% url 'dashboard:dashboard' %}">
     <input type="hidden" name="tab" id="tab-input" value="{{ tab }}" />
     <div class="toolbar">
-      <label>
-        クライアント（複数選択可）
-        <select name="clients" multiple onchange="this.form.submit()">
-          {% for c in all_clients %}
-            <option value="{{ c }}" {% if c in selected_clients %}selected{% endif %}>{{ c }}</option>
-          {% endfor %}
-        </select>
-      </label>
+      <div class="checkbox-dropdown" data-checkbox-dropdown>
+        <span class="checkbox-dropdown-label">クライアント（複数選択可）</span>
+        <button type="button" class="checkbox-dropdown-trigger">
+          <span class="checkbox-dropdown-summary">
+            {% if selected_clients %}{{ selected_clients|length }}件選択中{% else %}すべて{% endif %}
+          </span>
+          <span class="checkbox-dropdown-caret">▾</span>
+        </button>
+        <div class="checkbox-dropdown-panel">
+          <div class="checkbox-dropdown-actions">
+            <button type="button" data-dropdown-clear>すべて解除</button>
+            <button type="button" data-dropdown-all>すべて選択</button>
+          </div>
+          <ul>
+            {% for c in all_clients %}
+              <li>
+                <label>
+                  <input type="checkbox" name="clients" value="{{ c }}" {% if c in selected_clients %}checked{% endif %} onchange="this.form.submit()" />
+                  {{ c }}
+                </label>
+              </li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
 
-      <label>
-        講座（複数選択可）
-        <select name="courses" multiple onchange="this.form.submit()">
-          {% for c in all_courses %}
-            <option value="{{ c }}" {% if c in selected_courses %}selected{% endif %}>{{ c }}</option>
-          {% endfor %}
-        </select>
-      </label>
+      <div class="checkbox-dropdown" data-checkbox-dropdown>
+        <span class="checkbox-dropdown-label">講座（複数選択可）</span>
+        <button type="button" class="checkbox-dropdown-trigger">
+          <span class="checkbox-dropdown-summary">
+            {% if selected_courses %}{{ selected_courses|length }}件選択中{% else %}すべて{% endif %}
+          </span>
+          <span class="checkbox-dropdown-caret">▾</span>
+        </button>
+        <div class="checkbox-dropdown-panel">
+          <div class="checkbox-dropdown-actions">
+            <button type="button" data-dropdown-clear>すべて解除</button>
+            <button type="button" data-dropdown-all>すべて選択</button>
+          </div>
+          <ul>
+            {% for c in all_courses %}
+              <li>
+                <label>
+                  <input type="checkbox" name="courses" value="{{ c }}" {% if c in selected_courses %}checked{% endif %} onchange="this.form.submit()" />
+                  {{ c }}
+                </label>
+              </li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
 
       <label>
         用途
@@ -99,40 +133,61 @@
       <div class="chart-grid">
         <div class="card chart-card">
           <h3>講座別 総節約時間（年間換算）</h3>
+          <p class="chart-caption">講座ごとに、回答者全員分の節約時間を年間換算した合計値です。多い順に並んでいます。</p>
           <canvas id="courseBarChart" height="280"></canvas>
         </div>
         <div class="card chart-card">
           <h3>クライアント別 総節約時間（年間換算）</h3>
+          <p class="chart-caption">クライアント（企業）ごとの節約時間の年間換算合計です。提案資料の根拠として使えます。</p>
           <canvas id="clientBarChart" height="280"></canvas>
         </div>
         <div class="card chart-card" style="grid-column: 1 / -1">
-          <h3>月別 節約時間トレンド（回答日ベース）</h3>
+          <div class="chart-card-header">
+            <h3>節約時間トレンド（回答日ベース）</h3>
+            <div class="toggle-group" id="trend-granularity-toggle">
+              <button type="button" data-granularity="day">日次</button>
+              <button type="button" data-granularity="month" class="active">月次</button>
+              <button type="button" data-granularity="year">年次</button>
+            </div>
+          </div>
+          <p class="chart-caption" id="trend-caption">回答日を月次単位で集計しています。青線は年間換算した節約時間の合計、グレー線は回答件数です。</p>
           <canvas id="trendLineChart" height="280"></canvas>
         </div>
         <div class="card chart-card" style="grid-column: 1 / -1">
           <h3>講座別 サマリー</h3>
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>講座</th>
-                <th>回答数</th>
-                <th>総節約時間(年)</th>
-                <th>1人あたり(年)</th>
-                <th>平均満足度</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for g in by_course %}
+          <p class="chart-caption">講座ごとの時間効果と評価指標を一覧できます。NPSは-100〜100、満足度・理解度・講師評価は1〜5、難易度は1〜5（高いほど難しい）です。</p>
+          <div style="overflow-x: auto">
+            <table class="data-table">
+              <thead>
                 <tr>
-                  <td>{{ g.key }}</td>
-                  <td>{{ g.count }}</td>
-                  <td>{{ g.total_annual_hours|jpnum }} 時間</td>
-                  <td>{{ g.avg_annual_hours|jpnum }} 時間</td>
-                  <td>{{ g.avg_satisfaction|decimal1 }}</td>
+                  <th>講座</th>
+                  <th>回答数</th>
+                  <th>総節約時間(年)</th>
+                  <th>1人あたり(年)</th>
+                  <th>満足度</th>
+                  <th>理解度</th>
+                  <th>講師評価</th>
+                  <th>難易度</th>
+                  <th>NPS</th>
                 </tr>
-              {% endfor %}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {% for g in by_course %}
+                  <tr>
+                    <td>{{ g.key }}</td>
+                    <td>{{ g.count }}</td>
+                    <td>{{ g.total_annual_hours|jpnum }} 時間</td>
+                    <td>{{ g.avg_annual_hours|jpnum }} 時間</td>
+                    <td>{{ g.avg_satisfaction|decimal1 }}</td>
+                    <td>{{ g.avg_comprehension|decimal1 }}</td>
+                    <td>{{ g.avg_instructor|decimal1 }}</td>
+                    <td>{{ g.avg_difficulty|decimal1 }}</td>
+                    <td>{% if g.avg_nps == None %}—{% else %}{{ g.avg_nps|floatformat:0 }}{% endif %}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
@@ -141,26 +196,32 @@
       <div class="chart-grid">
         <div class="card chart-card">
           <h3>満足度の分布</h3>
+          <p class="chart-caption">満足度は1（低い）〜5（高い）の自己評価です。横軸が評価値、縦軸が回答件数。</p>
           <canvas id="satBarChart" height="240"></canvas>
         </div>
         <div class="card chart-card">
           <h3>理解度の分布</h3>
+          <p class="chart-caption">理解度は1（低い）〜5（高い）の自己評価です。横軸が評価値、縦軸が回答件数。</p>
           <canvas id="compBarChart" height="240"></canvas>
         </div>
         <div class="card chart-card">
           <h3>NPS内訳（推奨度）{% if chart_data.npsBreakdown.nps != None %} / NPS: {{ chart_data.npsBreakdown.nps|floatformat:0 }}{% endif %}</h3>
+          <p class="chart-caption">推奨度（0-10）を、推奨者(9-10)・中立者(7-8)・批判者(0-6)の3グループに分けた内訳です。NPSは推奨者%-批判者%。</p>
           <canvas id="npsPieChart" height="240"></canvas>
         </div>
         <div class="card chart-card">
           <h3>実践予定</h3>
+          <p class="chart-caption">「学んだ内容を実践する予定があるか」への回答の内訳です。</p>
           <canvas id="applyPieChart" height="240"></canvas>
         </div>
         <div class="card chart-card">
           <h3>難易度の分布</h3>
+          <p class="chart-caption">難易度は1（簡単）〜5（難しい）の自己評価です。横軸が評価値、縦軸が回答件数。</p>
           <canvas id="diffBarChart" height="240"></canvas>
         </div>
         <div class="card chart-card">
           <h3>自由記述の頻出キーワード</h3>
+          <p class="chart-caption">自由記述コメントから頻出する単語を抽出し、出現回数が多いほど大きく表示しています。</p>
           {% if not keywords %}
             <p class="muted">自由記述データがありません。</p>
           {% else %}

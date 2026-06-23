@@ -95,6 +95,10 @@ export interface GroupAgg {
   count: number;
   avgAnnualHours: number;
   avgSatisfaction: number | null;
+  avgComprehension: number | null;
+  avgNps: number | null;
+  avgDifficulty: number | null;
+  avgInstructor: number | null;
 }
 
 export function groupBy(
@@ -114,40 +118,78 @@ export function groupBy(
     const sat = avg(
       group.map((r) => r.satisfaction_score).filter((n): n is number => n != null)
     );
+    const comp = avg(
+      group.map((r) => r.comprehension_score).filter((n): n is number => n != null)
+    );
+    const nps = calcNps(
+      group.map((r) => r.nps_score).filter((n): n is number => n != null)
+    );
+    const diff = avg(
+      group.map((r) => r.difficulty_level).filter((n): n is number => n != null)
+    );
+    const inst = avg(
+      group.map((r) => r.instructor_score).filter((n): n is number => n != null)
+    );
     result.push({
       key,
       totalAnnualHours: total,
       count: group.length,
       avgAnnualHours: group.length ? total / group.length : 0,
       avgSatisfaction: sat,
+      avgComprehension: comp,
+      avgNps: nps,
+      avgDifficulty: diff,
+      avgInstructor: inst,
     });
   }
   return result.sort((a, b) => b.totalAnnualHours - a.totalAnnualHours);
 }
 
-// 月別の時系列集計（answered_at の YYYY-MM 単位）
+// 時系列集計（answered_at を日/月/年いずれかの単位に丸めて集計）
 export interface TrendPoint {
-  month: string; // YYYY-MM
+  month: string; // 集計単位に応じた期間ラベル（YYYY-MM-DD / YYYY-MM / YYYY）
   totalAnnualHours: number;
   count: number;
 }
 
-export function trendByMonth(
+export type TrendGranularity = "day" | "month" | "year";
+
+function trendKeyLength(granularity: TrendGranularity): number {
+  switch (granularity) {
+    case "day":
+      return 10;
+    case "year":
+      return 4;
+    default:
+      return 7;
+  }
+}
+
+export function trendBy(
   rows: SurveyResponse[],
-  workdayMode: WorkdayMode
+  workdayMode: WorkdayMode,
+  granularity: TrendGranularity = "month"
 ): TrendPoint[] {
+  const len = trendKeyLength(granularity);
   const map = new Map<string, { total: number; count: number }>();
   for (const r of rows) {
-    const month = (r.answered_at || "").slice(0, 7);
-    if (!month) continue;
-    if (!map.has(month)) map.set(month, { total: 0, count: 0 });
-    const e = map.get(month)!;
+    const key = (r.answered_at || "").slice(0, len);
+    if (!key) continue;
+    if (!map.has(key)) map.set(key, { total: 0, count: 0 });
+    const e = map.get(key)!;
     e.total += toAnnualHours(r, workdayMode);
     e.count += 1;
   }
   return Array.from(map.entries())
     .map(([month, v]) => ({ month, totalAnnualHours: v.total, count: v.count }))
     .sort((a, b) => a.month.localeCompare(b.month));
+}
+
+export function trendByMonth(
+  rows: SurveyResponse[],
+  workdayMode: WorkdayMode
+): TrendPoint[] {
+  return trendBy(rows, workdayMode, "month");
 }
 
 // 評価スコアの分布（1-5 や 0-10）

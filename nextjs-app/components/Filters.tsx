@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import { SurveyResponse, DashboardFilters, UsageType } from "@/lib/types";
+import { CheckboxDropdown } from "@/components/CheckboxDropdown";
 
 interface Props {
   rows: SurveyResponse[];
@@ -13,45 +14,25 @@ function uniq(values: (string | undefined)[]): string[] {
   return Array.from(new Set(values.filter((v): v is string => !!v))).sort();
 }
 
-function multiValues(e: React.ChangeEvent<HTMLSelectElement>): string[] {
-  return Array.from(e.target.selectedOptions).map((o) => o.value);
-}
-
 export function Filters({ rows, filters, onChange }: Props) {
   const clients = useMemo(() => uniq(rows.map((r) => r.client_name)), [rows]);
   const courses = useMemo(() => uniq(rows.map((r) => r.course_name)), [rows]);
 
   return (
     <>
-      <label>
-        クライアント（複数選択可）
-        <select
-          multiple
-          value={filters.clients}
-          onChange={(e) => onChange({ ...filters, clients: multiValues(e) })}
-        >
-          {clients.map((c) => (
-            <option key={c} value={c}>
-              {c}
-            </option>
-          ))}
-        </select>
-      </label>
+      <CheckboxDropdown
+        label="クライアント（複数選択可）"
+        options={clients}
+        selected={filters.clients}
+        onChange={(clients) => onChange({ ...filters, clients })}
+      />
 
-      <label>
-        講座（複数選択可）
-        <select
-          multiple
-          value={filters.courses}
-          onChange={(e) => onChange({ ...filters, courses: multiValues(e) })}
-        >
-          {courses.map((c) => (
-            <option key={c} value={c}>
-              {c}
-            </option>
-          ))}
-        </select>
-      </label>
+      <CheckboxDropdown
+        label="講座（複数選択可）"
+        options={courses}
+        selected={filters.courses}
+        onChange={(courses) => onChange({ ...filters, courses })}
+      />
 
       <label>
         用途
