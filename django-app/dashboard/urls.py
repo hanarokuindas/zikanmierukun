@@ -10,4 +10,5 @@ urlpatterns = [
     path("sample/", views.load_sample, name="sample"),
     path("clear/", views.clear, name="clear"),
     path("dashboard/", views.dashboard, name="dashboard"),
+    path("survey-builder/", views.survey_builder, name="survey_builder"),
 ]

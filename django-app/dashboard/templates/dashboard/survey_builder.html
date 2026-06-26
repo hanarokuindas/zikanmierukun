@@ -1,0 +1,66 @@
+{% extends "dashboard/base.html" %}
+{% load static %}
+{% block content %}
+
+<div class="card" style="margin-top: 20px">
+  <h2 style="margin-top: 0">アンケート設計・自動生成</h2>
+  <p class="muted">
+    計測したい指標を選ぶだけで、集計とそのまま整合するアンケートを生成します。
+    質問のタイトルが集計の列名と一致するため、Googleフォームの回答CSVを加工なしで取り込めます。
+  </p>
+
+  <div class="builder-grid">
+    <div>
+      <h3>1. 基本情報</h3>
+      <label class="builder-field">
+        フォームタイトル
+        <input type="text" id="formTitle" value="講座アンケート" />
+      </label>
+      <label class="builder-field">
+        講座名
+        <input type="text" id="courseName" placeholder="例: Excel自動化基礎講座" />
+      </label>
+      <label class="builder-field">
+        クライアント名
+        <input type="text" id="clientName" placeholder="例: 株式会社ABC" />
+      </label>
+      <label class="builder-checkbox">
+        <input type="checkbox" id="askDept" checked />
+        部署を質問する
+      </label>
+
+      <h3 style="margin-top: 20px">2. 計測する指標</h3>
+      {% for m in metrics %}
+        <label class="builder-metric">
+          <input type="checkbox" class="metric-check" data-id="{{ m.id }}" checked />
+          <span>
+            <strong>{{ m.label }}</strong>
+            <span class="muted" style="display: block; font-size: 12px">{{ m.description }}</span>
+          </span>
+        </label>
+      {% endfor %}
+
+      <h3 style="margin-top: 20px">3. 出力</h3>
+      <div class="builder-exports">
+        <button class="btn btn-primary" id="btn-gs-download">Googleフォーム生成スクリプト(.gs)</button>
+        <button class="btn" id="btn-gs-copy">スクリプトをコピー</button>
+        <button class="btn" id="btn-csv">CSVテンプレート</button>
+        <button class="btn" id="btn-md">質問票(Markdown)</button>
+      </div>
+      <p class="muted" style="font-size: 12px; margin-top: 10px">
+        .gsの使い方:
+        <a href="https://script.google.com/" target="_blank" rel="noreferrer">script.google.com</a>
+        で新規プロジェクトを作り、コードを貼り付けて関数
+        <code>createForm</code> を実行するとフォームが自動生成されます。
+      </p>
+    </div>
+
+    <div>
+      <h3>プレビュー（<span id="preview-count"></span>）</h3>
+      <ol class="builder-preview" id="preview-list"></ol>
+    </div>
+  </div>
+</div>
+
+<script src="{% static 'dashboard/survey_builder.js' %}"></script>
+{% endblock %}

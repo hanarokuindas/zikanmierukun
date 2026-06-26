@@ -21,6 +21,8 @@ const HEADER_ALIASES: Record<string, keyof SurveyResponse> = {
   部署: "respondent_dept",
   answered_at: "answered_at",
   回答日: "answered_at",
+  タイムスタンプ: "answered_at",
+  timestamp: "answered_at",
   time_unit: "time_unit",
   時間単位: "time_unit",
   単位: "time_unit",
@@ -75,6 +77,19 @@ function parseWouldApply(v: string): WouldApply | undefined {
   return undefined;
 }
 
+// 回答日の表記ゆれを吸収。Googleフォームの「2026/06/01 13:45:00」を
+// 「2026-06-01」に正規化する（トレンド集計のキーを揃えるため）。
+function normalizeDate(v: string): string {
+  const s = v.trim();
+  if (!s) return "";
+  const m = s.match(/(\d{4})[/-](\d{1,2})[/-](\d{1,2})/);
+  if (m) {
+    const [, y, mo, d] = m;
+    return `${y}-${mo.padStart(2, "0")}-${d.padStart(2, "0")}`;
+  }
+  return s;
+}
+
 function num(v: string): number | undefined {
   if (v == null || v.trim() === "") return undefined;
   const n = Number(v.replace(/[^0-9.\-]/g, ""));
@@ -123,7 +138,7 @@ export function parseCsv(text: string): ParseResult {
       course_name: obj.course_name?.trim() || "(未設定)",
       client_name: obj.client_name?.trim() || "(未設定)",
       respondent_dept: obj.respondent_dept?.trim() || undefined,
-      answered_at: obj.answered_at?.trim() || "",
+      answered_at: normalizeDate(obj.answered_at ?? ""),
       time_unit: (time_unit ?? "年") as TimeUnit,
       time_value: time_value ?? 0,
       usage_type: obj.usage_type ? parseUsageType(obj.usage_type) : undefined,

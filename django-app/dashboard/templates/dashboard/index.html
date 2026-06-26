@@ -23,6 +23,7 @@
         <button type="submit" class="btn btn-primary">サンプルデータで試す</button>
       </form>
       <a href="{% static 'dashboard/sample.csv' %}" class="btn" style="margin-left: 8px" download>サンプルCSVをダウンロード</a>
+      <a href="{% url 'dashboard:survey_builder' %}" class="btn" style="margin-left: 8px">アンケートを作る</a>
     </div>
 
     {% if errors %}

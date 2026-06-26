@@ -10,8 +10,9 @@ import { Filters } from "@/components/Filters";
 import { TimeTab } from "@/components/TimeTab";
 import { EvaluationTab } from "@/components/EvaluationTab";
 import { Uploader } from "@/components/Uploader";
+import { SurveyBuilder } from "@/components/SurveyBuilder";
 
-type TabKey = "time" | "evaluation";
+type TabKey = "time" | "evaluation" | "builder";
 
 export default function Home() {
   const [rows, setRows] = useState<SurveyResponse[]>([]);
@@ -61,7 +62,10 @@ export default function Home() {
 
       <main className="container">
         {!hasData ? (
-          <Uploader onCsv={handleCsv} onSample={loadSample} errors={errors} />
+          <>
+            <Uploader onCsv={handleCsv} onSample={loadSample} errors={errors} />
+            <SurveyBuilder />
+          </>
         ) : (
           <>
             <div className="toolbar">
@@ -226,13 +230,17 @@ export default function Home() {
               >
                 講座評価
               </button>
+              <button
+                className={`tab ${tab === "builder" ? "active" : ""}`}
+                onClick={() => setTab("builder")}
+              >
+                アンケート作成
+              </button>
             </div>
 
-            {tab === "time" ? (
-              <TimeTab rows={filtered} workdayMode={workdayMode} />
-            ) : (
-              <EvaluationTab rows={filtered} />
-            )}
+            {tab === "time" && <TimeTab rows={filtered} workdayMode={workdayMode} />}
+            {tab === "evaluation" && <EvaluationTab rows={filtered} />}
+            {tab === "builder" && <SurveyBuilder />}
           </>
         )}
       </main>

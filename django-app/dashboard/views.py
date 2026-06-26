@@ -4,6 +4,17 @@ from . import aggregate
 from .parsing import parse_csv
 from .sample_data import generate_sample_data
 
+SURVEY_METRICS = [
+    {"id": "time_saving",  "label": "節約・効率化できた時間", "description": "このアプリの中心指標。時間・単位・用途の3問で構成されます。"},
+    {"id": "satisfaction", "label": "満足度",               "description": "講座全体の満足度（5段階）"},
+    {"id": "comprehension","label": "理解度",               "description": "内容の理解度（5段階）"},
+    {"id": "nps",          "label": "推奨度（NPS）",        "description": "同僚・知人への推奨度（0〜10）"},
+    {"id": "instructor",   "label": "講師評価",             "description": "講師の分かりやすさ（5段階）"},
+    {"id": "difficulty",   "label": "難易度",               "description": "講座の難易度（5段階）"},
+    {"id": "would_apply",  "label": "実践予定",             "description": "学んだ内容を実務で実践する予定があるか"},
+    {"id": "free_comment", "label": "自由記述",             "description": "感想・要望の自由記述"},
+]
+
 SESSION_ROWS = "survey_rows"
 SESSION_ERRORS = "survey_errors"
 
@@ -165,3 +176,7 @@ def dashboard(request):
         "has_filtered_rows": bool(filtered),
     }
     return render(request, "dashboard/dashboard.html", context)
+
+
+def survey_builder(request):
+    return render(request, "dashboard/survey_builder.html", {"metrics": SURVEY_METRICS})
