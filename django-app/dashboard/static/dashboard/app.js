@@ -270,6 +270,30 @@ function initCharts(data) {
   }
 }
 
+function initKirkpatrickRadar(kirkData) {
+  const canvas = document.getElementById("kirkRadarChart");
+  if (!canvas || !kirkData) return;
+  const labels = kirkData.levels.map((lv) => lv.name.replace("（", "\n（"));
+  const scores = kirkData.levels.map((lv) => lv.score ?? 0);
+  new Chart(canvas, {
+    type: "radar",
+    data: {
+      labels,
+      datasets: [{
+        label: "スコア",
+        data: scores,
+        borderColor: "#2563eb",
+        backgroundColor: "rgba(37,99,235,0.2)",
+        pointBackgroundColor: "#2563eb",
+      }],
+    },
+    options: {
+      scales: { r: { min: 0, max: 100, ticks: { stepSize: 25 } } },
+      plugins: { legend: { display: false } },
+    },
+  });
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   initDropzone();
   initTabs();
@@ -278,5 +302,9 @@ document.addEventListener("DOMContentLoaded", () => {
   if (dataEl) {
     const data = JSON.parse(dataEl.textContent);
     initCharts(data);
+  }
+  const kirkEl = document.getElementById("kirk-data");
+  if (kirkEl) {
+    initKirkpatrickRadar(JSON.parse(kirkEl.textContent));
   }
 });

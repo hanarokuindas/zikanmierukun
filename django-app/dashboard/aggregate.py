@@ -67,6 +67,59 @@ def compute_kpis(rows, workday_mode):
     }
 
 
+def compute_kirkpatrick(rows, kpis, roi_result):
+    """カークパトリック4段階モデルのスコアを算出する（0〜100）。
+
+    Level 1 反応  : 満足度平均(1-5) を 0-100 に換算
+    Level 2 学習  : 理解度平均(1-5) を 0-100 に換算
+    Level 3 行動  : 実践予定「はい」の割合(%)
+    Level 4 結果  : 1人あたり年間節約時間を120hを満点として換算
+    """
+    def pct(val, lo, hi):
+        if val is None:
+            return None
+        return round((val - lo) / (hi - lo) * 100)
+
+    l1 = pct(kpis.get("avg_satisfaction"), 1, 5)
+    l2 = pct(kpis.get("avg_comprehension"), 1, 5)
+
+    answered = [r for r in rows if r.get("would_apply") is not None]
+    if answered:
+        yes = sum(1 for r in answered if r.get("would_apply") == "はい")
+        l3 = round(yes / len(answered) * 100)
+    else:
+        l3 = None
+
+    avg_h = kpis.get("avg_annual_hours_per_person", 0)
+    l4 = min(100, round(avg_h / 120 * 100)) if avg_h > 0 else (0 if kpis.get("response_count") else None)
+
+    def label(s):
+        if s is None:
+            return "データなし"
+        if s >= 75:
+            return "高い"
+        if s >= 50:
+            return "普通"
+        return "改善余地あり"
+
+    def color(s):
+        if s is None:
+            return "#94a3b8"
+        if s >= 75:
+            return "#22c55e"
+        if s >= 50:
+            return "#f59e0b"
+        return "#ef4444"
+
+    levels = [
+        {"level": 1, "name": "反応（Reaction）", "description": "受講者が研修にどう感じたか", "score": l1, "label": label(l1), "color": color(l1)},
+        {"level": 2, "name": "学習（Learning）", "description": "知識・スキルがどれだけ身についたか", "score": l2, "label": label(l2), "color": color(l2)},
+        {"level": 3, "name": "行動（Behavior）", "description": "学んだことを実務で実践しているか", "score": l3, "label": label(l3), "color": color(l3)},
+        {"level": 4, "name": "結果（Results）", "description": "業務への定量的な成果・ROI", "score": l4, "label": label(l4), "color": color(l4)},
+    ]
+    return {"levels": levels, "radar": [{"subject": f"Level {d['level']}", "score": d["score"] or 0} for d in levels]}
+
+
 def compute_roi(total_annual_hours, hourly_wage, training_cost):
     """ROI（投資対効果）を算出する。
 

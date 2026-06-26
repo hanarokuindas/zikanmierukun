@@ -158,6 +158,7 @@
   <div class="tabs">
     <button type="button" class="tab {% if tab == 'time' %}active{% endif %}" data-tab="time">時間効果</button>
     <button type="button" class="tab {% if tab == 'evaluation' %}active{% endif %}" data-tab="evaluation">講座評価</button>
+    <button type="button" class="tab {% if tab == 'kirkpatrick' %}active{% endif %}" data-tab="kirkpatrick">効果測定（4段階）</button>
   </div>
 
   {% if not has_filtered_rows %}
@@ -268,7 +269,65 @@
         </div>
       </div>
     </div>
+    <div class="tab-panel" data-tab="kirkpatrick" style="{% if tab != 'kirkpatrick' %}display:none{% endif %}">
+      {% with levels=kirkpatrick.levels %}
+
+      {# レーダーチャートの代わりにスコアバッジを横並びで表示（Chart.jsのRadar未設定のため） #}
+      <div class="card" style="margin-bottom: 20px">
+        <div class="chart-card-header">
+          <div>
+            <h3 style="margin: 0">カークパトリックモデル 総合評価</h3>
+            <p class="chart-caption" style="margin: 4px 0 0">研修効果を4段階で可視化。各レベルを0〜100点に正規化しています。</p>
+          </div>
+          <div style="display: flex; gap: 16px; flex-wrap: wrap">
+            {% for lv in levels %}
+              <div style="text-align: center">
+                <div style="font-size: 11px; color: var(--muted)">{{ lv.name|truncatechars:4 }}</div>
+                <div style="font-size: 24px; font-weight: 700; color: {{ lv.color }}">
+                  {% if lv.score is not None %}{{ lv.score }}{% else %}—{% endif %}
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+        <canvas id="kirkRadarChart" height="200"></canvas>
+      </div>
+
+      <div class="kirk-grid">
+        {% for lv in levels %}
+          <div class="kirk-card">
+            <div class="kirk-card-header">
+              <div class="kirk-level-badge" style="background: {{ lv.color }}">Level {{ lv.level }}</div>
+              <div>
+                <div class="kirk-card-title">{{ lv.name }}</div>
+                <div class="muted" style="font-size: 12px">{{ lv.description }}</div>
+              </div>
+            </div>
+            <div class="kirk-gauge-wrap">
+              <div class="kirk-gauge-bar">
+                <div class="kirk-gauge-fill" style="width: {% if lv.score is not None %}{{ lv.score }}{% else %}0{% endif %}%; background: {{ lv.color }}"></div>
+              </div>
+              <div class="kirk-gauge-labels">
+                <span class="muted" style="font-size: 12px">
+                  {% if lv.level == 1 %}満足度平均 {{ kpis.avg_satisfaction|decimal1 }} / 5
+                  {% elif lv.level == 2 %}理解度平均 {{ kpis.avg_comprehension|decimal1 }} / 5
+                  {% elif lv.level == 3 %}実践予定「はい」{{ lv.score }}%
+                  {% elif lv.level == 4 %}1人あたり年間 {{ kpis.avg_annual_hours_per_person|jpnum }}h 削減
+                  {% endif %}
+                </span>
+                <span style="font-weight: 700; color: {{ lv.color }}">
+                  {% if lv.score is not None %}{{ lv.score }} / 100{% else %}—{% endif %}
+                  <span class="muted" style="font-weight: 400; font-size: 12px; margin-left: 6px">{{ lv.label }}</span>
+                </span>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+      {% endwith %}
+    </div>
   {% endif %}
 
   {{ chart_data|json_script:"chart-data" }}
+  {{ kirkpatrick|json_script:"kirk-data" }}
 {% endblock %}

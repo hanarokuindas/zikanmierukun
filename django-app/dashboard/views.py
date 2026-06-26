@@ -104,6 +104,7 @@ def dashboard(request):
 
     kpis = aggregate.compute_kpis(filtered, workday_mode)
     roi = aggregate.compute_roi(kpis["total_annual_hours"], hourly_wage, training_cost)
+    kirkpatrick = aggregate.compute_kirkpatrick(filtered, kpis, roi)
     by_course = aggregate.group_by(filtered, "course_name", workday_mode)
     by_client = aggregate.group_by(filtered, "client_name", workday_mode)
     trend_day = aggregate.trend_by(filtered, workday_mode, "day")
@@ -161,6 +162,7 @@ def dashboard(request):
         "errors": errors,
         "kpis": kpis,
         "roi": roi,
+        "kirkpatrick": kirkpatrick,
         "hourly_wage": hourly_wage,
         "training_cost": training_cost,
         "by_course": by_course,

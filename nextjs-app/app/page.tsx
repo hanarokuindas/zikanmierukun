@@ -11,8 +11,9 @@ import { TimeTab } from "@/components/TimeTab";
 import { EvaluationTab } from "@/components/EvaluationTab";
 import { Uploader } from "@/components/Uploader";
 import { SurveyBuilder } from "@/components/SurveyBuilder";
+import { KirkpatrickTab } from "@/components/KirkpatrickTab";
 
-type TabKey = "time" | "evaluation" | "builder";
+type TabKey = "time" | "evaluation" | "kirkpatrick" | "builder";
 
 export default function Home() {
   const [rows, setRows] = useState<SurveyResponse[]>([]);
@@ -231,6 +232,12 @@ export default function Home() {
                 講座評価
               </button>
               <button
+                className={`tab ${tab === "kirkpatrick" ? "active" : ""}`}
+                onClick={() => setTab("kirkpatrick")}
+              >
+                効果測定（4段階）
+              </button>
+              <button
                 className={`tab ${tab === "builder" ? "active" : ""}`}
                 onClick={() => setTab("builder")}
               >
@@ -240,6 +247,9 @@ export default function Home() {
 
             {tab === "time" && <TimeTab rows={filtered} workdayMode={workdayMode} />}
             {tab === "evaluation" && <EvaluationTab rows={filtered} />}
+            {tab === "kirkpatrick" && (
+              <KirkpatrickTab rows={filtered} workdayMode={workdayMode} roi={roi} />
+            )}
             {tab === "builder" && <SurveyBuilder />}
           </>
         )}
