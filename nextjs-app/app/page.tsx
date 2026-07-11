@@ -163,7 +163,7 @@ export default function Home() {
               </div>
               <div className="kpi-card kpi-card-highlight">
                 <div className="label">コスト削減額（年間換算）</div>
-                <div className="value">
+                <div className="value value-money">
                   {fmtYen(roiResult.costSavings)}
                   <span className="unit">円/年</span>
                 </div>

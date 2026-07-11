@@ -100,6 +100,13 @@ body {
   font-size: 28px;
   font-weight: 700;
   color: var(--primary);
+  overflow-wrap: anywhere;
+  line-height: 1.15;
+}
+
+/* 金額など桁数の大きい値は、枠からあふれないよう自動で縮小する */
+.kpi-card .value-money {
+  font-size: clamp(18px, 2vw, 26px);
 }
 
 .kpi-card .unit {
@@ -107,6 +114,7 @@ body {
   color: var(--muted);
   margin-left: 4px;
   font-weight: 400;
+  white-space: nowrap;
 }
 
 .tabs {

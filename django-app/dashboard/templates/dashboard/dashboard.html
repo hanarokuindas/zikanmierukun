@@ -129,7 +129,7 @@
     </div>
     <div class="kpi-card kpi-card-highlight">
       <div class="label">コスト削減額（年間換算）</div>
-      <div class="value">{{ roi.cost_savings|yen }}<span class="unit">円/年</span></div>
+      <div class="value value-money">{{ roi.cost_savings|yen }}<span class="unit">円/年</span></div>
       <div class="muted" style="font-size: 12px; margin-top: 4px">{{ roi.cost_savings|yenunit }}（時給 {{ hourly_wage|yen }} 円換算）</div>
     </div>
     <div class="kpi-card kpi-card-highlight">
