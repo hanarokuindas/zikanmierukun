@@ -21,6 +21,12 @@ export function toYenUnit(amount: number): string {
   return `${fmtYen(amount)} 円`;
 }
 
+// 評価スコア（X / max）を達成率％に換算する。例: 4.0 / 5 → 80%
+export function fmtScorePercent(avg: number | null, max = 5): string {
+  if (avg == null) return "—";
+  return `${Math.round((avg / max) * 100)}%`;
+}
+
 // 大きな時間を「人日（8h）/人月(160h)」換算で補助表示
 export function toPersonDays(hours: number): string {
   const days = hours / 8;

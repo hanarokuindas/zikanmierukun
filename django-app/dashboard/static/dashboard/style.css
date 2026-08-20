@@ -395,6 +395,25 @@ table.data-table th {
   font-weight: 600;
 }
 
+/* ── 評価スコアの平均・達成率表示 ── */
+.score-stat {
+  margin: 0 0 8px;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--primary);
+}
+.score-stat-pct {
+  display: inline-block;
+  margin-left: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+  background: var(--primary);
+  border-radius: 99px;
+  padding: 2px 10px;
+  vertical-align: middle;
+}
+
 /* ── アップロード時のメタ指定 ── */
 .upload-step-label {
   margin: 0 0 8px;

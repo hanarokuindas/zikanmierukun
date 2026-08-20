@@ -36,6 +36,17 @@ def persondays(hours):
 
 
 @register.filter
+def scorepercent(value, max_score=5):
+    """評価スコア（X / max）を達成率％に換算する。例: 4.0 / 5 → 80%。"""
+    if value is None:
+        return "—"
+    try:
+        return f"{round(float(value) / float(max_score) * 100)}%"
+    except (TypeError, ValueError, ZeroDivisionError):
+        return "—"
+
+
+@register.filter
 def yen(value):
     """円の3桁区切り表記。nextjs-app/lib/format.ts の fmtYen と同じ。"""
     try:

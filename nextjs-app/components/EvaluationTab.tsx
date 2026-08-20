@@ -16,9 +16,16 @@ import {
 } from "recharts";
 import { SurveyResponse } from "@/lib/types";
 import { scoreDistribution, keywordFrequency, calcNps } from "@/lib/aggregate";
+import { fmtDecimal, fmtScorePercent } from "@/lib/format";
 
 interface Props {
   rows: SurveyResponse[];
+}
+
+function avgOf(rows: SurveyResponse[], field: "satisfaction_score" | "comprehension_score"): number | null {
+  const vals = rows.map((r) => r[field]).filter((n): n is number => n != null);
+  if (!vals.length) return null;
+  return vals.reduce((a, b) => a + b, 0) / vals.length;
 }
 
 const PIE_COLORS = ["#2563eb", "#94a3b8", "#f59e0b"];
@@ -65,6 +72,9 @@ export function EvaluationTab({ rows }: Props) {
     };
   }, [rows]);
 
+  const avgSat = useMemo(() => avgOf(rows, "satisfaction_score"), [rows]);
+  const avgComp = useMemo(() => avgOf(rows, "comprehension_score"), [rows]);
+
   if (!rows.length) {
     return <p className="muted">条件に合うデータがありません。</p>;
   }
@@ -73,6 +83,10 @@ export function EvaluationTab({ rows }: Props) {
     <div className="chart-grid">
       <div className="card chart-card">
         <h3>満足度の分布</h3>
+        <p className="score-stat">
+          平均 {fmtDecimal(avgSat)} / 5
+          <span className="score-stat-pct">達成率 {fmtScorePercent(avgSat)}</span>
+        </p>
         <p className="chart-caption">満足度は1（低い）〜5（高い）の自己評価です。横軸が評価値、縦軸が回答件数。</p>
         <ResponsiveContainer width="100%" height={240}>
           <BarChart data={satDist}>
@@ -87,6 +101,10 @@ export function EvaluationTab({ rows }: Props) {
 
       <div className="card chart-card">
         <h3>理解度の分布</h3>
+        <p className="score-stat">
+          平均 {fmtDecimal(avgComp)} / 5
+          <span className="score-stat-pct">達成率 {fmtScorePercent(avgComp)}</span>
+        </p>
         <p className="chart-caption">理解度は1（低い）〜5（高い）の自己評価です。横軸が評価値、縦軸が回答件数。</p>
         <ResponsiveContainer width="100%" height={240}>
           <BarChart data={compDist}>

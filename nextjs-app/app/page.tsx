@@ -5,7 +5,7 @@ import { SurveyResponse, WorkdayMode, DashboardFilters, UsageType, RoiSettings }
 import { parseCsv, applySurveyMeta, SurveyMeta } from "@/lib/parseCsv";
 import { generateSampleData } from "@/lib/sampleData";
 import { applyFilters, computeKpis, computeRoi } from "@/lib/aggregate";
-import { fmtHours, fmtDecimal, toPersonDays, fmtYen, toYenUnit } from "@/lib/format";
+import { fmtHours, fmtDecimal, toPersonDays, fmtYen, toYenUnit, fmtScorePercent } from "@/lib/format";
 import { Filters } from "@/components/Filters";
 import { TimeTab } from "@/components/TimeTab";
 import { EvaluationTab } from "@/components/EvaluationTab";
@@ -208,6 +208,9 @@ export default function Home() {
                 <div className="value">
                   {fmtDecimal(kpis.avgSatisfaction)}
                   <span className="unit">/ 5</span>
+                </div>
+                <div className="muted" style={{ fontSize: 12, marginTop: 4 }}>
+                  達成率 {fmtScorePercent(kpis.avgSatisfaction)}
                 </div>
               </div>
               <div className="kpi-card">

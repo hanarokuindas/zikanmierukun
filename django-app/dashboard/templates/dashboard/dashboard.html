@@ -148,6 +148,7 @@
     <div class="kpi-card">
       <div class="label">平均満足度</div>
       <div class="value">{{ kpis.avg_satisfaction|decimal1 }}<span class="unit">/ 5</span></div>
+      <div class="muted" style="font-size: 12px; margin-top: 4px">達成率 {{ kpis.avg_satisfaction|scorepercent }}</div>
     </div>
     <div class="kpi-card">
       <div class="label">NPS（推奨度）</div>
@@ -231,11 +232,13 @@
       <div class="chart-grid">
         <div class="card chart-card">
           <h3>満足度の分布</h3>
+          <p class="score-stat">平均 {{ kpis.avg_satisfaction|decimal1 }} / 5<span class="score-stat-pct">達成率 {{ kpis.avg_satisfaction|scorepercent }}</span></p>
           <p class="chart-caption">満足度は1（低い）〜5（高い）の自己評価です。横軸が評価値、縦軸が回答件数。</p>
           <canvas id="satBarChart" height="240"></canvas>
         </div>
         <div class="card chart-card">
           <h3>理解度の分布</h3>
+          <p class="score-stat">平均 {{ kpis.avg_comprehension|decimal1 }} / 5<span class="score-stat-pct">達成率 {{ kpis.avg_comprehension|scorepercent }}</span></p>
           <p class="chart-caption">理解度は1（低い）〜5（高い）の自己評価です。横軸が評価値、縦軸が回答件数。</p>
           <canvas id="compBarChart" height="240"></canvas>
         </div>
