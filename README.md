@@ -4,6 +4,8 @@ IT講座の事後アンケートを集計し、受講者が「節約できた・
 
 技術選定のための比較検証として、同一機能を **Next.js版** と **Django版** の2実装で構成しています（モノリポ）。
 
+> **🌐 ブラウザですぐ試す（Next.js版・インストール不要）: https://hanarokuindas.github.io/zikanmierukun/**
+>
 > **📄 このシステムの目的・活用方法・効果については [`docs/about.md`](./docs/about.md) を参照してください。**
 
 ## 構成

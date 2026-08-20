@@ -36,7 +36,9 @@ npm run build  # 本番ビルド
 
 `claude/affectionate-feynman-a6ibyf` ブランチ（または `main`）に `nextjs-app/` の変更がプッシュされると、GitHub Actions（`.github/workflows/deploy-pages.yml`）が自動でビルドし、GitHub Pagesに公開します。ZIPダウンロードやローカル環境のセットアップなしに、ブラウザでURLを開くだけで最新の動作を確認できます。
 
-公開URL: `https://<GitHubユーザー名>.github.io/zikanmierukun/`
+**公開URL: https://hanarokuindas.github.io/zikanmierukun/**
+
+（フォーク・別アカウントの場合は `https://<GitHubユーザー名>.github.io/zikanmierukun/`）
 
 初回のみ、リポジトリの Settings → Pages で「Source: GitHub Actions」に設定してください。
 
