@@ -12,6 +12,7 @@
       {% csrf_token %}
 
       <div class="upload-meta">
+        <p class="upload-step-label">STEP 1. 講座名・クライアント名を指定（先に入力してください）</p>
         <p class="muted" style="margin: 0 0 8px; font-size: 12px">
           講座名・クライアント名は回答者に入力させず、ここでまとめて指定できます
           （1フォーム＝1講座・1クライアントを想定）。CSVに既に列がある場合は空欄の行だけ補完します。
@@ -32,6 +33,7 @@
         </label>
       </div>
 
+      <p class="upload-step-label">STEP 2. CSVファイルを選択（選択すると自動で読み込まれます）</p>
       <div class="dropzone" id="dropzone">
         <p style="margin: 0; font-weight: 600">📁 ここにCSVファイルをドラッグ＆ドロップ</p>
         <p class="muted" style="margin: 6px 0 0">またはクリックしてファイルを選択</p>

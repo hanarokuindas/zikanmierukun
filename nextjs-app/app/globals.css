@@ -390,6 +390,12 @@ table.data-table th {
 }
 
 /* ── アップロード時のメタ指定 ── */
+.upload-step-label {
+  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--primary);
+}
 .upload-meta {
   background: var(--bg);
   border: 1px solid var(--border);

@@ -36,6 +36,7 @@ export function Uploader({ onCsv, onSample, errors }: Props) {
       </p>
 
       <div className="upload-meta">
+        <p className="upload-step-label">STEP 1. 講座名・クライアント名を指定（先に入力してください）</p>
         <p className="muted" style={{ margin: "0 0 8px", fontSize: 12 }}>
           講座名・クライアント名は回答者に入力させず、ここでまとめて指定できます
           （1フォーム＝1講座・1クライアントを想定）。CSVに既に列がある場合は空欄の行だけ補完します。
@@ -70,6 +71,7 @@ export function Uploader({ onCsv, onSample, errors }: Props) {
         </label>
       </div>
 
+      <p className="upload-step-label">STEP 2. CSVファイルを選択（選択すると自動で読み込まれます）</p>
       <div
         className="dropzone"
         onClick={() => inputRef.current?.click()}
