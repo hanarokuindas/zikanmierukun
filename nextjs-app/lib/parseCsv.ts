@@ -6,6 +6,36 @@ export interface ParseResult {
   errors: string[];
 }
 
+// 取り込み時に講座名・クライアント名をまとめて指定する。
+// 通常フォームは「1講座・1クライアント」なので、回答者に入力させず
+// 主催者がここで一括指定する（案A）。
+//   mode "fill"      : 未設定・空欄の行だけ補完（CSVに値がある行は尊重）
+//   mode "overwrite" : 全行を指定値で上書き
+export interface SurveyMeta {
+  courseName?: string;
+  clientName?: string;
+  mode?: "fill" | "overwrite";
+}
+
+const EMPTY_VALUES = new Set(["", "(未設定)"]);
+
+export function applySurveyMeta(rows: SurveyResponse[], meta: SurveyMeta): SurveyResponse[] {
+  const course = meta.courseName?.trim();
+  const client = meta.clientName?.trim();
+  const overwrite = meta.mode === "overwrite";
+  if (!course && !client) return rows;
+  return rows.map((r) => {
+    const next = { ...r };
+    if (course && (overwrite || EMPTY_VALUES.has(next.course_name))) {
+      next.course_name = course;
+    }
+    if (client && (overwrite || EMPTY_VALUES.has(next.client_name))) {
+      next.client_name = client;
+    }
+    return next;
+  });
+}
+
 // 列名の表記ゆれを吸収するためのエイリアス
 const HEADER_ALIASES: Record<string, keyof SurveyResponse> = {
   response_id: "response_id",

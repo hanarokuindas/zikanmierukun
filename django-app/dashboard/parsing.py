@@ -17,6 +17,8 @@ HEADER_ALIASES = {
     "部署": "respondent_dept",
     "answered_at": "answered_at",
     "回答日": "answered_at",
+    "タイムスタンプ": "answered_at",
+    "timestamp": "answered_at",
     "time_unit": "time_unit",
     "時間単位": "time_unit",
     "単位": "time_unit",
@@ -99,6 +101,38 @@ def _to_number(v):
         return None
 
 
+def _normalize_date(v):
+    """回答日の表記ゆれを吸収。Googleフォームの「2026/06/01 13:45:00」を
+    「2026-06-01」に正規化する（トレンド集計のキーを揃えるため）。"""
+    s = (v or "").strip()
+    if not s:
+        return ""
+    m = re.match(r"(\d{4})[/-](\d{1,2})[/-](\d{1,2})", s)
+    if m:
+        y, mo, d = m.groups()
+        return f"{y}-{int(mo):02d}-{int(d):02d}"
+    return s
+
+
+_EMPTY_VALUES = {"", "(未設定)"}
+
+
+def apply_survey_meta(rows, course_name=None, client_name=None, overwrite=False):
+    """取り込み時に講座名・クライアント名を一括指定する（案A）。
+    1フォーム＝1講座・1クライアントを想定し、回答者に入力させない代わりに
+    主催者がここで指定する。overwrite=False なら空欄の行だけ補完する。"""
+    course = (course_name or "").strip()
+    client = (client_name or "").strip()
+    if not course and not client:
+        return rows
+    for r in rows:
+        if course and (overwrite or r.get("course_name") in _EMPTY_VALUES):
+            r["course_name"] = course
+        if client and (overwrite or r.get("client_name") in _EMPTY_VALUES):
+            r["client_name"] = client
+    return rows
+
+
 def parse_csv(text):
     """CSVテキストをパースして (rows, errors) を返す。"""
     errors = []
@@ -122,8 +156,9 @@ def parse_csv(text):
         time_unit = _parse_time_unit(obj.get("time_unit", "")) if obj.get("time_unit") else None
         time_value = _to_number(obj.get("time_value", ""))
 
-        if not obj.get("course_name") and not obj.get("client_name"):
-            errors.append(f"行{line_no}: 講座名・クライアント名が両方空のためスキップ")
+        # 講座名・クライアント名は取り込み時に一括指定できる（案A）ため、
+        # CSVに無くてもスキップしない。中身が完全に空の行だけを除外する。
+        if not any((v or "").strip() for v in obj.values()):
             continue
         if not time_unit:
             errors.append(f"行{line_no}: 時間単位(月/日/年)が不正のため時間=0で扱います")
@@ -133,7 +168,7 @@ def parse_csv(text):
             "course_name": (obj.get("course_name") or "").strip() or "(未設定)",
             "client_name": (obj.get("client_name") or "").strip() or "(未設定)",
             "respondent_dept": (obj.get("respondent_dept") or "").strip() or None,
-            "answered_at": (obj.get("answered_at") or "").strip(),
+            "answered_at": _normalize_date(obj.get("answered_at", "")),
             "time_unit": time_unit or "年",
             "time_value": time_value if time_value is not None else 0,
             "usage_type": _parse_usage_type(obj["usage_type"]) if obj.get("usage_type") else None,

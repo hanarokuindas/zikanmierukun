@@ -1,9 +1,10 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { SurveyMeta } from "@/lib/parseCsv";
 
 interface Props {
-  onCsv: (text: string) => void;
+  onCsv: (text: string, meta: SurveyMeta) => void;
   onSample: () => void;
   errors: string[];
 }
@@ -11,10 +12,18 @@ interface Props {
 export function Uploader({ onCsv, onSample, errors }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragOver, setDragOver] = useState(false);
+  const [courseName, setCourseName] = useState("");
+  const [clientName, setClientName] = useState("");
+  const [overwrite, setOverwrite] = useState(false);
 
   function readFile(file: File) {
     const reader = new FileReader();
-    reader.onload = () => onCsv(String(reader.result || ""));
+    reader.onload = () =>
+      onCsv(String(reader.result || ""), {
+        courseName,
+        clientName,
+        mode: overwrite ? "overwrite" : "fill",
+      });
     reader.readAsText(file, "UTF-8");
   }
 
@@ -25,6 +34,41 @@ export function Uploader({ onCsv, onSample, errors }: Props) {
         Googleフォーム等から出力したアンケート回答のCSVを読み込みます。
         列名は日本語・英語どちらにも対応しています（例: 講座名 / course_name）。
       </p>
+
+      <div className="upload-meta">
+        <p className="muted" style={{ margin: "0 0 8px", fontSize: 12 }}>
+          講座名・クライアント名は回答者に入力させず、ここでまとめて指定できます
+          （1フォーム＝1講座・1クライアントを想定）。CSVに既に列がある場合は空欄の行だけ補完します。
+        </p>
+        <div className="upload-meta-fields">
+          <label className="builder-field" style={{ marginBottom: 0 }}>
+            講座名（このファイル全体に適用）
+            <input
+              type="text"
+              placeholder="例: 校務改善のためのICT活用研修"
+              value={courseName}
+              onChange={(e) => setCourseName(e.target.value)}
+            />
+          </label>
+          <label className="builder-field" style={{ marginBottom: 0 }}>
+            クライアント名（このファイル全体に適用）
+            <input
+              type="text"
+              placeholder="例: 都留市教育委員会"
+              value={clientName}
+              onChange={(e) => setClientName(e.target.value)}
+            />
+          </label>
+        </div>
+        <label className="builder-checkbox" style={{ marginTop: 8 }}>
+          <input
+            type="checkbox"
+            checked={overwrite}
+            onChange={(e) => setOverwrite(e.target.checked)}
+          />
+          CSVに値がある行も上書きする
+        </label>
+      </div>
 
       <div
         className="dropzone"

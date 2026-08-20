@@ -172,25 +172,15 @@ export interface SurveyConfig {
 }
 
 // 設定 → 実際の質問リストを組み立てる（属性質問 + 選択された指標の質問）
+//
+// 設計方針: 講座名・クライアント名は「回答者に入力させない」。
+//   1フォーム＝1講座＝1クライアントが通常のため、回答者に毎回入力させると
+//   表記ゆれ（タイプミス）で集計が壊れる。これらは主催者が把握している値なので、
+//   アプリのCSV取り込み時に一括指定する（下記 assignMeta を参照）。
+//   ここでは回答者向けの質問（部署 + 選択された指標）だけを組み立てる。
 export function buildQuestions(config: SurveyConfig): QuestionDef[] {
   const questions: QuestionDef[] = [];
 
-  questions.push({
-    title: "講座名",
-    help: config.courseName
-      ? `主催者の指定どおり「${config.courseName}」と入力してください`
-      : "受講した講座名を入力してください",
-    type: "text",
-    required: true,
-  });
-  questions.push({
-    title: "クライアント名",
-    help: config.clientName
-      ? `主催者の指定どおり「${config.clientName}」と入力してください`
-      : "所属企業・団体名を入力してください",
-    type: "text",
-    required: true,
-  });
   if (config.askDept) {
     questions.push({
       title: "部署",

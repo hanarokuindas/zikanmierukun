@@ -389,6 +389,23 @@ table.data-table th {
   font-weight: 600;
 }
 
+/* ── アップロード時のメタ指定 ── */
+.upload-meta {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin-bottom: 14px;
+}
+.upload-meta-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+@media (max-width: 600px) {
+  .upload-meta-fields { grid-template-columns: 1fr; }
+}
+
 /* ── カークパトリックタブ ── */
 .kirk-grid {
   display: grid;

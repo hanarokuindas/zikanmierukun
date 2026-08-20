@@ -44,9 +44,9 @@ function getConfig() {
 }
 
 function buildQuestions(config) {
+  // 講座名・クライアント名は回答者に入力させない（案A）。
+  // 1フォーム＝1講座＝1クライアントのため、表記ゆれ防止に取り込み時一括指定する。
   const qs = [];
-  qs.push({ title: "講座名", help: config.courseName ? `主催者の指定どおり「${config.courseName}」と入力してください` : "受講した講座名を入力してください", type: "text", required: true });
-  qs.push({ title: "クライアント名", help: config.clientName ? `主催者の指定どおり「${config.clientName}」と入力してください` : "所属企業・団体名を入力してください", type: "text", required: true });
   if (config.askDept) qs.push({ title: "部署", help: "所属部署を入力してください（任意）", type: "text" });
   for (const id of config.selectedMetricIds) {
     const m = METRICS.find((x) => x.id === id);

@@ -69,7 +69,7 @@ export function SurveyBuilder() {
             />
           </label>
           <label className="builder-field">
-            講座名
+            講座名（フォームの説明用・回答者には質問しません）
             <input
               type="text"
               placeholder="例: Excel自動化基礎講座"
@@ -78,7 +78,7 @@ export function SurveyBuilder() {
             />
           </label>
           <label className="builder-field">
-            クライアント名
+            クライアント名（フォームの説明用・回答者には質問しません）
             <input
               type="text"
               placeholder="例: 株式会社ABC"
@@ -86,6 +86,10 @@ export function SurveyBuilder() {
               onChange={(e) => setConfig((c) => ({ ...c, clientName: e.target.value }))}
             />
           </label>
+          <p className="muted" style={{ fontSize: 12, margin: "0 0 4px" }}>
+            💡 講座名・クライアント名は回答者に入力させず、CSV取り込み時にまとめて指定します
+            （表記ゆれ防止のため）。ここでの入力はフォームの説明文とCSVテンプレートの記入例に使われます。
+          </p>
           <label className="builder-checkbox">
             <input
               type="checkbox"

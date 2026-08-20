@@ -10,6 +10,28 @@
 
     <form id="upload-form" method="post" action="{% url 'dashboard:upload' %}" enctype="multipart/form-data">
       {% csrf_token %}
+
+      <div class="upload-meta">
+        <p class="muted" style="margin: 0 0 8px; font-size: 12px">
+          講座名・クライアント名は回答者に入力させず、ここでまとめて指定できます
+          （1フォーム＝1講座・1クライアントを想定）。CSVに既に列がある場合は空欄の行だけ補完します。
+        </p>
+        <div class="upload-meta-fields">
+          <label class="builder-field" style="margin-bottom: 0">
+            講座名（このファイル全体に適用）
+            <input type="text" name="course_name" placeholder="例: 校務改善のためのICT活用研修" />
+          </label>
+          <label class="builder-field" style="margin-bottom: 0">
+            クライアント名（このファイル全体に適用）
+            <input type="text" name="client_name" placeholder="例: 都留市教育委員会" />
+          </label>
+        </div>
+        <label class="builder-checkbox" style="margin-top: 8px">
+          <input type="checkbox" name="overwrite" />
+          CSVに値がある行も上書きする
+        </label>
+      </div>
+
       <div class="dropzone" id="dropzone">
         <p style="margin: 0; font-weight: 600">📁 ここにCSVファイルをドラッグ＆ドロップ</p>
         <p class="muted" style="margin: 6px 0 0">またはクリックしてファイルを選択</p>

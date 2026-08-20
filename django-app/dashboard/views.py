@@ -38,6 +38,15 @@ def upload(request):
     text = csv_file.read().decode("utf-8-sig", errors="replace")
     rows, errors = parse_csv(text)
 
+    from .parsing import apply_survey_meta
+
+    rows = apply_survey_meta(
+        rows,
+        course_name=request.POST.get("course_name", ""),
+        client_name=request.POST.get("client_name", ""),
+        overwrite=request.POST.get("overwrite") == "on",
+    )
+
     request.session[SESSION_ROWS] = rows
     request.session[SESSION_ERRORS] = errors
 

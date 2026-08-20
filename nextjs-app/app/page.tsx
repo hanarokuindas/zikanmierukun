@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { SurveyResponse, WorkdayMode, DashboardFilters, UsageType, RoiSettings } from "@/lib/types";
-import { parseCsv } from "@/lib/parseCsv";
+import { parseCsv, applySurveyMeta, SurveyMeta } from "@/lib/parseCsv";
 import { generateSampleData } from "@/lib/sampleData";
 import { applyFilters, computeKpis, computeRoi } from "@/lib/aggregate";
 import { fmtHours, fmtDecimal, toPersonDays, fmtYen, toYenUnit } from "@/lib/format";
@@ -27,9 +27,9 @@ export default function Home() {
     usageTypes: [],
   });
 
-  function handleCsv(text: string) {
+  function handleCsv(text: string, meta: SurveyMeta) {
     const result = parseCsv(text);
-    setRows(result.rows);
+    setRows(applySurveyMeta(result.rows, meta));
     setErrors(result.errors);
     setFilters({ clients: [], courses: [], usageTypes: [] });
   }
