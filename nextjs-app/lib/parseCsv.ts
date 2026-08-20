@@ -155,8 +155,10 @@ export function parseCsv(text: string): ParseResult {
     const time_unit = obj.time_unit ? parseTimeUnit(obj.time_unit) : null;
     const time_value = num(obj.time_value ?? "");
 
-    if (!obj.course_name && !obj.client_name) {
-      errors.push(`行${lineNo}: 講座名・クライアント名が両方空のためスキップ`);
+    // 講座名・クライアント名は取り込み時に一括指定できる（案A）ため、
+    // CSVに無くてもスキップしない。中身が完全に空の行だけを除外する。
+    const hasAnyValue = Object.values(obj).some((v) => (v ?? "").trim() !== "");
+    if (!hasAnyValue) {
       return;
     }
     if (!time_unit) {
