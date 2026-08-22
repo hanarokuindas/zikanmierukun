@@ -18,7 +18,6 @@ import { SurveyResponse, WorkdayMode, RoiSettings, DashboardFilters } from "@/li
 import {
   computeKpis,
   computeRoi,
-  groupBy,
   trendBy,
   scoreDistribution,
   calcNps,
@@ -44,8 +43,32 @@ function avgOf(rows: SurveyResponse[], field: "satisfaction_score" | "comprehens
 export function ClientReport({ rows, workdayMode, roi, filters, onClose }: Props) {
   const kpis = useMemo(() => computeKpis(rows, workdayMode), [rows, workdayMode]);
   const roiResult = useMemo(() => computeRoi(kpis.totalAnnualHours, roi), [kpis, roi]);
-  const byCourse = useMemo(() => groupBy(rows, "course_name", workdayMode), [rows, workdayMode]);
   const trend = useMemo(() => trendBy(rows, workdayMode, "month"), [rows, workdayMode]);
+
+  // 年間節約時間の算定根拠（回答単位ごとの換算内訳）
+  const basis = useMemo(() => {
+    const cats = [
+      { key: "月あたり", factor: 12, match: (r: SurveyResponse) => r.time_unit === "月" },
+      { key: "年あたり", factor: 1, match: (r: SurveyResponse) => r.time_unit === "年" },
+      {
+        key: "日あたり（業務）",
+        factor: workdayMode,
+        match: (r: SurveyResponse) => r.time_unit === "日" && r.usage_type !== "プライベート",
+      },
+      {
+        key: "日あたり（プライベート）",
+        factor: 365,
+        match: (r: SurveyResponse) => r.time_unit === "日" && r.usage_type === "プライベート",
+      },
+    ];
+    return cats
+      .map((c) => {
+        const rs = rows.filter(c.match);
+        const inputSum = rs.reduce((s, r) => s + (Number.isFinite(r.time_value) ? r.time_value : 0), 0);
+        return { key: c.key, factor: c.factor, count: rs.length, inputSum, annual: inputSum * c.factor };
+      })
+      .filter((c) => c.count > 0);
+  }, [rows, workdayMode]);
   const satDist = useMemo(() => scoreDistribution(rows, "satisfaction_score", 5), [rows]);
   const compDist = useMemo(() => scoreDistribution(rows, "comprehension_score", 5), [rows]);
   const avgSat = useMemo(() => avgOf(rows, "satisfaction_score"), [rows]);
@@ -178,23 +201,70 @@ export function ClientReport({ rows, workdayMode, roi, filters, onClose }: Props
 
       {/* 2. 時間削減の内訳 */}
       <section className="report-section">
-        <h2 className="report-heading">2. 時間削減の内訳</h2>
+        <h2 className="report-heading">2. 年間節約時間とその算定根拠</h2>
         <p className="report-desc">
-          どの講座で、いつ、どれだけの時間が生み出されたかを示します。
+          この研修によって生み出された時間と、その算出方法を示します。
         </p>
 
         <div className="report-card">
-          <h3 className="report-card-title">講座別の年間節約時間</h3>
-          <p className="report-card-desc">講座ごとに、受講者全員分の節約時間を1年分に換算して合計したものです。棒が長いほど効果が大きい講座です。</p>
-          <ResponsiveContainer width="100%" height={Math.max(200, byCourse.length * 40)}>
-            <BarChart data={byCourse} layout="vertical" margin={{ left: 20, right: 30 }}>
-              <CartesianGrid strokeDasharray="3 3" horizontal={false} />
-              <XAxis type="number" tickFormatter={(v) => fmtHours(v)} />
-              <YAxis type="category" dataKey="key" width={150} tick={{ fontSize: 11 }} />
-              <Tooltip formatter={(v: number) => [`${fmtHours(v)} 時間/年`, "年間節約時間"]} />
-              <Bar dataKey="totalAnnualHours" fill="#2563eb" radius={[0, 4, 4, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
+          <div className="report-total">
+            <div>
+              <div className="report-total-label">年間の節約時間（合計）</div>
+              <div className="report-total-value">{fmtHours(kpis.totalAnnualHours)}<span>時間/年</span></div>
+            </div>
+            <div>
+              <div className="report-total-label">1人あたり（{kpis.responseCount}名）</div>
+              <div className="report-total-value">{fmtHours(kpis.avgAnnualHoursPerPerson)}<span>時間/年</span></div>
+            </div>
+          </div>
+          <p className="report-total-sub">{toPersonDays(kpis.totalAnnualHours)}に相当します。</p>
+        </div>
+
+        <div className="report-card">
+          <h3 className="report-card-title">算定根拠</h3>
+          <p className="report-card-desc">
+            各受講者が回答した「効率化できた時間」を、回答単位（月・日・年あたり）に応じて1年分に換算し合計しています。
+            日あたり（業務）は年間の勤務日数 {workdayMode} 日、日あたり（プライベート）は 365 日で換算しています。
+          </p>
+          <table className="report-table">
+            <thead>
+              <tr>
+                <th>回答単位</th>
+                <th className="num">件数</th>
+                <th className="num">入力時間の合計</th>
+                <th className="num">年間換算係数</th>
+                <th className="num">年間換算時間</th>
+              </tr>
+            </thead>
+            <tbody>
+              {basis.map((b) => (
+                <tr key={b.key}>
+                  <td>{b.key}</td>
+                  <td className="num">{b.count} 件</td>
+                  <td className="num">{fmtDecimal(b.inputSum)} 時間</td>
+                  <td className="num">×{b.factor}</td>
+                  <td className="num">{fmtHours(b.annual)} 時間</td>
+                </tr>
+              ))}
+              <tr className="report-table-total">
+                <td>合計</td>
+                <td className="num">{kpis.responseCount} 件</td>
+                <td className="num">—</td>
+                <td className="num">—</td>
+                <td className="num">{fmtHours(kpis.totalAnnualHours)} 時間/年</td>
+              </tr>
+            </tbody>
+          </table>
+          <p className="report-card-desc" style={{ marginTop: 10, marginBottom: 0 }}>
+            コスト削減額は、上記の年間節約時間に想定時給 {fmtYen(roi.hourlyWage)} 円を掛けて算出しています
+            （{fmtHours(kpis.totalAnnualHours)} 時間 × {fmtYen(roi.hourlyWage)} 円 = {fmtYen(roiResult.costSavings)} 円/年）。
+            {roiResult.roiPercent != null && (
+              <>
+                {" "}ROIは、コスト削減額から研修費用 {fmtYen(roiResult.trainingCost)} 円を差し引いた純便益を
+                研修費用で割って算出しています（ROI {Math.round(roiResult.roiPercent).toLocaleString("ja-JP")}%）。
+              </>
+            )}
+          </p>
         </div>
 
         {trend.length > 1 && (
@@ -331,22 +401,6 @@ export function ClientReport({ rows, workdayMode, roi, filters, onClose }: Props
         </section>
       )}
 
-      {/* 用語の説明 */}
-      <section className="report-section">
-        <h2 className="report-heading">用語の説明</h2>
-        <dl className="report-glossary">
-          <dt>年間の節約時間</dt>
-          <dd>受講者が「効率化できた」と回答した時間を、回答単位（日・月・年あたり）に応じて1年分に換算し合計したものです。</dd>
-          <dt>コスト削減額</dt>
-          <dd>節約時間に想定時給を掛けて金額に換算したものです。時間短縮を人件費の観点から金額で表しています。</dd>
-          <dt>ROI（投資対効果）</dt>
-          <dd>研修費用に対して得られた効果（コスト削減額）の割合です。100%超で費用以上の効果を意味します。</dd>
-          <dt>NPS（推奨度）</dt>
-          <dd>「人にすすめたいか」を0〜10で尋ね、推奨者の割合から批判者の割合を引いた指標です（−100〜＋100）。</dd>
-          <dt>達成率</dt>
-          <dd>5段階評価の平均を「5点満点に対する割合（%）」で表したものです。</dd>
-        </dl>
-      </section>
     </div>
   );
 }

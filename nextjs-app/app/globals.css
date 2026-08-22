@@ -880,3 +880,57 @@ table.data-table th {
     break-inside: avoid;
   }
 }
+
+/* レポート: 年間節約時間の合計表示と算定根拠テーブル */
+.report-total {
+  display: flex;
+  gap: 40px;
+  flex-wrap: wrap;
+}
+.report-total-label {
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+.report-total-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--primary);
+  line-height: 1.1;
+}
+.report-total-value span {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--muted);
+  margin-left: 4px;
+}
+.report-total-sub {
+  margin: 10px 0 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+.report-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.report-table th,
+.report-table td {
+  border-bottom: 1px solid var(--border);
+  padding: 8px 10px;
+  text-align: left;
+}
+.report-table th {
+  color: var(--muted);
+  font-weight: 600;
+  background: var(--bg);
+}
+.report-table .num {
+  text-align: right;
+  white-space: nowrap;
+}
+.report-table-total td {
+  font-weight: 700;
+  border-top: 2px solid var(--primary);
+  border-bottom: none;
+}
