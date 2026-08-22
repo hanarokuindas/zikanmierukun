@@ -114,6 +114,32 @@ def dashboard(request):
     kpis = aggregate.compute_kpis(filtered, workday_mode)
     roi = aggregate.compute_roi(kpis["total_annual_hours"], hourly_wage, training_cost)
     kirkpatrick = aggregate.compute_kirkpatrick(filtered, kpis, roi)
+
+    # 自由記述の全文一覧（空欄除外）を20件ごとにページング
+    comments = [
+        {
+            "text": (r.get("free_comment") or "").strip(),
+            "course": r.get("course_name"),
+            "client": r.get("client_name"),
+            "date": r.get("answered_at"),
+        }
+        for r in filtered
+        if (r.get("free_comment") or "").strip()
+    ]
+    from django.core.paginator import Paginator
+
+    comment_paginator = Paginator(comments, 20)
+    try:
+        comment_page_num = int(request.GET.get("comment_page", "1"))
+    except ValueError:
+        comment_page_num = 1
+    comment_page = comment_paginator.get_page(comment_page_num)
+
+    # ページャ用: comment_page 以外の現在のクエリを維持し、tab=evaluation を保証
+    qs = request.GET.copy()
+    qs.pop("comment_page", None)
+    qs["tab"] = "evaluation"
+    comment_base_qs = qs.urlencode()
     by_course = aggregate.group_by(filtered, "course_name", workday_mode)
     by_client = aggregate.group_by(filtered, "client_name", workday_mode)
     trend_day = aggregate.trend_by(filtered, workday_mode, "day")
@@ -122,7 +148,6 @@ def dashboard(request):
     sat_dist = aggregate.score_distribution(filtered, "satisfaction_score", 5)
     comp_dist = aggregate.score_distribution(filtered, "comprehension_score", 5)
     diff_dist = aggregate.score_distribution(filtered, "difficulty_level", 5)
-    keywords = aggregate.keyword_frequency(filtered, 25)
     apply_dist = aggregate.would_apply_distribution(filtered)
     nps_breakdown = aggregate.nps_breakdown(filtered)
 
@@ -172,10 +197,12 @@ def dashboard(request):
         "kpis": kpis,
         "roi": roi,
         "kirkpatrick": kirkpatrick,
+        "comment_page": comment_page,
+        "comment_total": len(comments),
+        "comment_base_qs": comment_base_qs,
         "hourly_wage": hourly_wage,
         "training_cost": training_cost,
         "by_course": by_course,
-        "keywords": keywords,
         "chart_data": chart_data,
         "all_clients": all_clients,
         "all_courses": all_courses,

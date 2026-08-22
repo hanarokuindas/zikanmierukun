@@ -395,6 +395,39 @@ table.data-table th {
   font-weight: 600;
 }
 
+/* ── 自由記述コメント一覧 ── */
+.comment-list {
+  margin: 8px 0 0;
+  padding-left: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.comment-item {
+  padding: 12px 14px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.comment-text {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.comment-meta {
+  margin-top: 6px;
+  font-size: 11px;
+}
+.comment-pager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 16px;
+}
+
 /* ── 評価スコアの平均・達成率表示 ── */
 .score-stat {
   margin: 0 0 8px;

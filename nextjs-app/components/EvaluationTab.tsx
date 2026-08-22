@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
   BarChart,
   Bar,
@@ -15,7 +15,7 @@ import {
   Legend,
 } from "recharts";
 import { SurveyResponse } from "@/lib/types";
-import { scoreDistribution, keywordFrequency, calcNps } from "@/lib/aggregate";
+import { scoreDistribution, calcNps } from "@/lib/aggregate";
 import { fmtDecimal, fmtScorePercent } from "@/lib/format";
 
 interface Props {
@@ -43,7 +43,24 @@ export function EvaluationTab({ rows }: Props) {
     () => scoreDistribution(rows, "difficulty_level", 5),
     [rows]
   );
-  const keywords = useMemo(() => keywordFrequency(rows, 25), [rows]);
+  // 自由記述の全文一覧（空欄は除外）
+  const comments = useMemo(
+    () =>
+      rows
+        .map((r) => ({
+          text: (r.free_comment || "").trim(),
+          course: r.course_name,
+          client: r.client_name,
+          date: r.answered_at,
+        }))
+        .filter((c) => c.text !== ""),
+    [rows]
+  );
+  const PER_PAGE = 20;
+  const [commentPage, setCommentPage] = useState(0);
+  const pageCount = Math.max(1, Math.ceil(comments.length / PER_PAGE));
+  const page = Math.min(commentPage, pageCount - 1);
+  const pageComments = comments.slice(page * PER_PAGE, page * PER_PAGE + PER_PAGE);
 
   const applyDist = useMemo(() => {
     const counts: Record<string, number> = { はい: 0, いいえ: 0, わからない: 0 };
@@ -179,23 +196,53 @@ export function EvaluationTab({ rows }: Props) {
         </ResponsiveContainer>
       </div>
 
-      <div className="card chart-card">
-        <h3>自由記述の頻出キーワード</h3>
-        <p className="chart-caption">自由記述コメントから頻出する単語を抽出し、出現回数が多いほど大きく表示しています。</p>
-        {keywords.length === 0 ? (
+      <div className="card chart-card" style={{ gridColumn: "1 / -1" }}>
+        <div className="chart-card-header">
+          <h3>自由記述コメント（全文）</h3>
+          {comments.length > 0 && (
+            <span className="muted" style={{ fontSize: 12 }}>
+              全 {comments.length} 件中 {page * PER_PAGE + 1}〜
+              {Math.min(page * PER_PAGE + PER_PAGE, comments.length)} 件
+            </span>
+          )}
+        </div>
+        <p className="chart-caption">受講者の自由記述を全文で表示します。20件ごとにページを切り替えられます。</p>
+        {comments.length === 0 ? (
           <p className="muted">自由記述データがありません。</p>
         ) : (
-          <div className="tag-cloud">
-            {keywords.map((k) => (
-              <span
-                key={k.word}
-                className="tag"
-                style={{ fontSize: 12 + Math.min(k.count, 10) }}
-              >
-                {k.word} ({k.count})
-              </span>
-            ))}
-          </div>
+          <>
+            <ol className="comment-list" start={page * PER_PAGE + 1}>
+              {pageComments.map((c, i) => (
+                <li key={i} className="comment-item">
+                  <p className="comment-text">{c.text}</p>
+                  <div className="comment-meta muted">
+                    {[c.course, c.client, c.date].filter(Boolean).join(" ・ ")}
+                  </div>
+                </li>
+              ))}
+            </ol>
+            {pageCount > 1 && (
+              <div className="comment-pager">
+                <button
+                  className="btn"
+                  disabled={page === 0}
+                  onClick={() => setCommentPage(page - 1)}
+                >
+                  ← 前の20件
+                </button>
+                <span className="muted" style={{ fontSize: 13 }}>
+                  {page + 1} / {pageCount} ページ
+                </span>
+                <button
+                  className="btn"
+                  disabled={page >= pageCount - 1}
+                  onClick={() => setCommentPage(page + 1)}
+                >
+                  次の20件 →
+                </button>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>

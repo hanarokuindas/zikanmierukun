@@ -257,17 +257,44 @@
           <p class="chart-caption">難易度は1（簡単）〜5（難しい）の自己評価です。横軸が評価値、縦軸が回答件数。</p>
           <canvas id="diffBarChart" height="240"></canvas>
         </div>
-        <div class="card chart-card">
-          <h3>自由記述の頻出キーワード</h3>
-          <p class="chart-caption">自由記述コメントから頻出する単語を抽出し、出現回数が多いほど大きく表示しています。</p>
-          {% if not keywords %}
+        <div class="card chart-card" style="grid-column: 1 / -1">
+          <div class="chart-card-header">
+            <h3>自由記述コメント（全文）</h3>
+            {% if comment_total %}
+              <span class="muted" style="font-size: 12px">
+                全 {{ comment_total }} 件中 {{ comment_page.start_index }}〜{{ comment_page.end_index }} 件
+              </span>
+            {% endif %}
+          </div>
+          <p class="chart-caption">受講者の自由記述を全文で表示します。20件ごとにページを切り替えられます。</p>
+          {% if not comment_total %}
             <p class="muted">自由記述データがありません。</p>
           {% else %}
-            <div class="tag-cloud">
-              {% for k in keywords %}
-                <span class="tag" style="font-size: {{ k.count|tagsize }}px">{{ k.word }} ({{ k.count }})</span>
+            <ol class="comment-list" start="{{ comment_page.start_index }}">
+              {% for c in comment_page %}
+                <li class="comment-item">
+                  <p class="comment-text">{{ c.text }}</p>
+                  <div class="comment-meta muted">
+                    {{ c.course }}{% if c.client %} ・ {{ c.client }}{% endif %}{% if c.date %} ・ {{ c.date }}{% endif %}
+                  </div>
+                </li>
               {% endfor %}
-            </div>
+            </ol>
+            {% if comment_page.paginator.num_pages > 1 %}
+              <div class="comment-pager">
+                {% if comment_page.has_previous %}
+                  <a class="btn" href="?{{ comment_base_qs }}&comment_page={{ comment_page.previous_page_number }}">← 前の20件</a>
+                {% else %}
+                  <span class="btn" style="opacity: 0.4; cursor: not-allowed">← 前の20件</span>
+                {% endif %}
+                <span class="muted" style="font-size: 13px">{{ comment_page.number }} / {{ comment_page.paginator.num_pages }} ページ</span>
+                {% if comment_page.has_next %}
+                  <a class="btn" href="?{{ comment_base_qs }}&comment_page={{ comment_page.next_page_number }}">次の20件 →</a>
+                {% else %}
+                  <span class="btn" style="opacity: 0.4; cursor: not-allowed">次の20件 →</span>
+                {% endif %}
+              </div>
+            {% endif %}
           {% endif %}
         </div>
       </div>
