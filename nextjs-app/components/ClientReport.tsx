@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useEffect } from "react";
 import {
   BarChart,
   Bar,
@@ -142,6 +142,21 @@ export function ClientReport({ rows, workdayMode, roi, filters, onClose }: Props
       },
     ].map((lv) => ({ ...lv, color: color(lv.score) }));
   }, [avgSat, avgComp, applyYesPct, kpis]);
+
+  // 印刷時、Rechartsのグラフが印刷ページ幅で再測定されるようにresizeを通知する
+  useEffect(() => {
+    const onBeforePrint = () => window.dispatchEvent(new Event("resize"));
+    window.addEventListener("beforeprint", onBeforePrint);
+    const mql = window.matchMedia?.("print");
+    const onChange = (e: MediaQueryListEvent) => {
+      if (e.matches) window.dispatchEvent(new Event("resize"));
+    };
+    mql?.addEventListener?.("change", onChange);
+    return () => {
+      window.removeEventListener("beforeprint", onBeforePrint);
+      mql?.removeEventListener?.("change", onChange);
+    };
+  }, []);
 
   const today = new Date().toLocaleDateString("ja-JP");
   const clientLabel = filters.clients.length ? filters.clients.join("、") : "全対象";
@@ -373,8 +388,8 @@ export function ClientReport({ rows, workdayMode, roi, filters, onClose }: Props
               <p className="report-card-desc">
                 推奨度（0〜10）を、推奨者（9〜10）・中立者（7〜8）・批判者（0〜6）に分けた割合です。推奨者が多いほど良好です。
               </p>
-              <ResponsiveContainer width="100%" height={220}>
-                <PieChart>
+              <div className="report-pie-wrap">
+                <PieChart width={300} height={240}>
                   <Pie
                     data={(() => {
                       const s = rows.map((r) => r.nps_score).filter((n): n is number => n != null);
@@ -389,6 +404,7 @@ export function ClientReport({ rows, workdayMode, roi, filters, onClose }: Props
                     cx="50%"
                     cy="50%"
                     outerRadius={75}
+                    isAnimationActive={false}
                     label
                   >
                     {[0, 1, 2].map((i) => (
@@ -398,7 +414,7 @@ export function ClientReport({ rows, workdayMode, roi, filters, onClose }: Props
                   <Tooltip />
                   <Legend />
                 </PieChart>
-              </ResponsiveContainer>
+              </div>
             </div>
           )}
 
@@ -410,9 +426,9 @@ export function ClientReport({ rows, workdayMode, roi, filters, onClose }: Props
               <p className="report-card-desc">
                 「学んだ内容を実務で実践する予定があるか」への回答割合です。「はい」が多いほど、現場での活用が期待できます。
               </p>
-              <ResponsiveContainer width="100%" height={220}>
-                <PieChart>
-                  <Pie data={applyDist} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={75} label>
+              <div className="report-pie-wrap">
+                <PieChart width={300} height={240}>
+                  <Pie data={applyDist} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={75} isAnimationActive={false} label>
                     {applyDist.map((_, i) => (
                       <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
                     ))}
@@ -420,7 +436,7 @@ export function ClientReport({ rows, workdayMode, roi, filters, onClose }: Props
                   <Tooltip />
                   <Legend />
                 </PieChart>
-              </ResponsiveContainer>
+              </div>
             </div>
           )}
 

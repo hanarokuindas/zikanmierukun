@@ -987,3 +987,14 @@ table.data-table th {
   line-height: 1.6;
   color: var(--muted);
 }
+
+/* レポート: 円グラフは固定サイズ＋中央寄せ（印刷崩れ防止） */
+.report-pie-wrap {
+  display: flex;
+  justify-content: center;
+  max-width: 100%;
+  overflow: hidden;
+}
+.report-pie-wrap .recharts-wrapper {
+  max-width: 100%;
+}
