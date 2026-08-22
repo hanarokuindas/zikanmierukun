@@ -680,3 +680,203 @@ table.data-table th {
     display: none !important;
   }
 }
+
+/* ── クライアント向けレポート ── */
+.report-page {
+  max-width: 900px;
+  margin: 0 auto;
+}
+.report-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+.report-header {
+  border-bottom: 3px solid var(--primary);
+  padding-bottom: 16px;
+  margin-bottom: 24px;
+}
+.report-header h1 {
+  margin: 0 0 12px;
+  font-size: 26px;
+  color: var(--primary);
+}
+.report-meta {
+  border-collapse: collapse;
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+.report-meta th {
+  text-align: left;
+  color: var(--muted);
+  font-weight: 600;
+  padding: 2px 16px 2px 0;
+  white-space: nowrap;
+  vertical-align: top;
+}
+.report-meta td {
+  padding: 2px 0;
+}
+.report-lead {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.8;
+  color: var(--text);
+}
+.report-section {
+  margin-bottom: 28px;
+}
+.report-heading {
+  font-size: 18px;
+  color: var(--text);
+  border-left: 5px solid var(--primary);
+  padding-left: 10px;
+  margin: 0 0 8px;
+}
+.report-desc {
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--muted);
+  margin: 0 0 14px;
+}
+.report-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+}
+.report-kpi {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 16px;
+  background: var(--card);
+}
+.report-kpi-label {
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+.report-kpi-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--primary);
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+.report-kpi-money {
+  font-size: clamp(18px, 2.4vw, 24px);
+}
+.report-kpi-value span {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--muted);
+  margin-left: 4px;
+}
+.report-kpi-note {
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--muted);
+  margin-top: 6px;
+}
+.report-card {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px 18px;
+  background: var(--card);
+  margin-bottom: 16px;
+}
+.report-card-title {
+  font-size: 15px;
+  margin: 0 0 4px;
+}
+.report-card-desc {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.6;
+  margin: 0 0 12px;
+}
+.report-score {
+  margin: 0 0 6px;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--primary);
+}
+.report-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.report-comments {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.report-comment {
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--accent);
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-size: 13px;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  word-break: break-word;
+  background: var(--card);
+}
+.report-glossary {
+  margin: 0;
+  font-size: 12px;
+}
+.report-glossary dt {
+  font-weight: 700;
+  color: var(--text);
+  margin-top: 8px;
+}
+.report-glossary dd {
+  margin: 2px 0 0;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+@media (max-width: 640px) {
+  .report-kpi-grid,
+  .report-grid-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* レポートPDF出力（ページ区切りを自然に） */
+@media print {
+  @page {
+    margin: 14mm;
+  }
+  .app-header,
+  .report-noprint {
+    display: none !important;
+  }
+  body {
+    background: #fff;
+  }
+  .container {
+    padding: 0;
+    max-width: none;
+  }
+  .report-page {
+    max-width: none;
+  }
+  /* 見出しがページ末尾に取り残されないように */
+  .report-heading,
+  .report-card-title {
+    break-after: avoid;
+  }
+  /* カード・KPI・コメント・グラフは途中で分割しない */
+  .report-kpi,
+  .report-card,
+  .report-comment,
+  .recharts-responsive-container {
+    break-inside: avoid;
+  }
+}

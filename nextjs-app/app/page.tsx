@@ -12,6 +12,7 @@ import { EvaluationTab } from "@/components/EvaluationTab";
 import { Uploader } from "@/components/Uploader";
 import { SurveyBuilder } from "@/components/SurveyBuilder";
 import { KirkpatrickTab } from "@/components/KirkpatrickTab";
+import { ClientReport } from "@/components/ClientReport";
 
 type TabKey = "time" | "evaluation" | "kirkpatrick" | "builder";
 
@@ -21,6 +22,7 @@ export default function Home() {
   const [tab, setTab] = useState<TabKey>("time");
   const [workdayMode, setWorkdayMode] = useState<WorkdayMode>(260);
   const [roi, setRoi] = useState<RoiSettings>({ hourlyWage: 3000, trainingCost: 0 });
+  const [reportMode, setReportMode] = useState(false);
   const [filters, setFilters] = useState<DashboardFilters>({
     clients: [],
     courses: [],
@@ -67,6 +69,14 @@ export default function Home() {
             <Uploader onCsv={handleCsv} onSample={loadSample} errors={errors} />
             <SurveyBuilder />
           </>
+        ) : reportMode ? (
+          <ClientReport
+            rows={filtered}
+            workdayMode={workdayMode}
+            roi={roi}
+            filters={filters}
+            onClose={() => setReportMode(false)}
+          />
         ) : (
           <>
             <div className="toolbar">
@@ -123,8 +133,8 @@ export default function Home() {
               </label>
               <label>
                 レポート出力
-                <button className="btn btn-primary" onClick={() => window.print()}>
-                  印刷 / PDFで保存
+                <button className="btn btn-primary" onClick={() => setReportMode(true)}>
+                  クライアント向けレポート
                 </button>
               </label>
             </div>
