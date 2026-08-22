@@ -934,3 +934,56 @@ table.data-table th {
   border-top: 2px solid var(--primary);
   border-bottom: none;
 }
+
+/* レポート: 研修効果の4段階評価 */
+.report-levels {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.report-level {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 16px;
+  background: var(--card);
+}
+.report-level-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+.report-level-step {
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 6px;
+  padding: 3px 8px;
+  white-space: nowrap;
+}
+.report-level-name {
+  font-size: 14px;
+  font-weight: 700;
+  flex: 1;
+}
+.report-level-score {
+  font-size: 16px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.report-level-bar {
+  height: 10px;
+  background: var(--border);
+  border-radius: 99px;
+  overflow: hidden;
+}
+.report-level-fill {
+  height: 100%;
+  border-radius: 99px;
+}
+.report-level-desc {
+  margin: 8px 0 0;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--muted);
+}

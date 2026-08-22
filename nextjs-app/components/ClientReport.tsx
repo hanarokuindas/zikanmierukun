@@ -71,6 +71,12 @@ export function ClientReport({ rows, workdayMode, roi, filters, onClose }: Props
   }, [rows, workdayMode]);
   const satDist = useMemo(() => scoreDistribution(rows, "satisfaction_score", 5), [rows]);
   const compDist = useMemo(() => scoreDistribution(rows, "comprehension_score", 5), [rows]);
+  const diffDist = useMemo(() => scoreDistribution(rows, "difficulty_level", 5), [rows]);
+  const avgDiff = useMemo(() => {
+    const vals = rows.map((r) => r.difficulty_level).filter((n): n is number => n != null);
+    if (!vals.length) return null;
+    return vals.reduce((a, b) => a + b, 0) / vals.length;
+  }, [rows]);
   const avgSat = useMemo(() => avgOf(rows, "satisfaction_score"), [rows]);
   const avgComp = useMemo(() => avgOf(rows, "comprehension_score"), [rows]);
   const avgInst = useMemo(() => avgOf(rows, "instructor_score"), [rows]);
@@ -97,6 +103,45 @@ export function ClientReport({ rows, workdayMode, roi, filters, onClose }: Props
     if (!answered.length) return null;
     return Math.round((answered.filter((r) => r.would_apply === "はい").length / answered.length) * 100);
   }, [rows]);
+
+  // 研修効果の4段階評価（カークパトリックモデル）をクライアント向け表現で
+  const levels = useMemo(() => {
+    const pct = (v: number | null, lo: number, hi: number) =>
+      v == null ? null : Math.round(((v - lo) / (hi - lo)) * 100);
+    const l1 = pct(avgSat, 1, 5);
+    const l2 = pct(avgComp, 1, 5);
+    const l3 = applyYesPct;
+    const l4 =
+      kpis.responseCount === 0
+        ? null
+        : kpis.avgAnnualHoursPerPerson <= 0
+        ? 0
+        : Math.min(100, Math.round((kpis.avgAnnualHoursPerPerson / 120) * 100));
+    const color = (s: number | null) =>
+      s == null ? "#94a3b8" : s >= 75 ? "#22c55e" : s >= 50 ? "#f59e0b" : "#ef4444";
+    return [
+      {
+        name: "満足度（研修への評価）",
+        score: l1,
+        desc: "受講者が研修そのものに満足したかを表します。満足度アンケートの平均を100点換算しています。",
+      },
+      {
+        name: "理解度（知識・スキルの習得）",
+        score: l2,
+        desc: "研修内容をどれだけ理解・習得できたかを表します。理解度アンケートの平均を100点換算しています。",
+      },
+      {
+        name: "実践意欲（現場での活用）",
+        score: l3,
+        desc: "学んだ内容を実務で実践する意欲があるかを表します。「実践する」と回答した割合です。",
+      },
+      {
+        name: "成果（業務の効率化）",
+        score: l4,
+        desc: "実際の業務効率化につながったかを表します。1人あたりの年間節約時間をもとに算出しています。",
+      },
+    ].map((lv) => ({ ...lv, color: color(lv.score) }));
+  }, [avgSat, avgComp, applyYesPct, kpis]);
 
   const today = new Date().toLocaleDateString("ja-JP");
   const clientLabel = filters.clients.length ? filters.clients.join("、") : "全対象";
@@ -378,6 +423,23 @@ export function ClientReport({ rows, workdayMode, roi, filters, onClose }: Props
               </ResponsiveContainer>
             </div>
           )}
+
+          <div className="report-card">
+            <h3 className="report-card-title">難易度の分布{avgDiff != null && `（平均 ${fmtDecimal(avgDiff)} / 5）`}</h3>
+            <p className="report-card-desc">
+              研修の難易度をどう感じたかの回答（1＝易しい〜5＝難しい）です。中央（3前後）に集まっているほど、
+              受講者にとって適切な難易度だったことを示します。
+            </p>
+            <ResponsiveContainer width="100%" height={220}>
+              <BarChart data={diffDist}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="score" />
+                <YAxis allowDecimals={false} />
+                <Tooltip formatter={(v: number) => [`${v} 件`, "回答数"]} />
+                <Bar dataKey="count" fill="#f59e0b" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
         </div>
         {avgInst != null && (
           <p className="report-desc" style={{ marginTop: 8 }}>
@@ -386,10 +448,37 @@ export function ClientReport({ rows, workdayMode, roi, filters, onClose }: Props
         )}
       </section>
 
+      {/* 4. 研修効果の総合評価 */}
+      <section className="report-section">
+        <h2 className="report-heading">4. 研修効果の総合評価</h2>
+        <p className="report-desc">
+          研修の効果を「満足度 → 理解度 → 実践意欲 → 成果」という4つの段階で評価したものです。
+          各段階を0〜100点で表し、点数が高いほど効果が高いことを示します。研修が受講者の満足だけで終わらず、
+          実務の成果まで結びついているかを確認できます。
+        </p>
+        <div className="report-levels">
+          {levels.map((lv, i) => (
+            <div key={i} className="report-level">
+              <div className="report-level-head">
+                <span className="report-level-step" style={{ background: lv.color }}>STEP {i + 1}</span>
+                <span className="report-level-name">{lv.name}</span>
+                <span className="report-level-score" style={{ color: lv.color }}>
+                  {lv.score == null ? "—" : `${lv.score} / 100`}
+                </span>
+              </div>
+              <div className="report-level-bar">
+                <div className="report-level-fill" style={{ width: `${lv.score ?? 0}%`, background: lv.color }} />
+              </div>
+              <p className="report-level-desc">{lv.desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
       {/* 4. 受講者の声 */}
       {comments.length > 0 && (
         <section className="report-section">
-          <h2 className="report-heading">4. 受講者の声（自由記述）</h2>
+          <h2 className="report-heading">5. 受講者の声（自由記述）</h2>
           <p className="report-desc">
             アンケートに寄せられた自由記述コメントを、いただいたまま全文で掲載しています（全 {comments.length} 件）。
           </p>
