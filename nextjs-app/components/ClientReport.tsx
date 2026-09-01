@@ -97,17 +97,23 @@ export function ClientReport({ rows, workdayMode, roi, filters, onClose }: Props
     [rows]
   );
 
-  // 効率化の具体例（受講者の声から、時間・コスト削減につながった内容を抜粋）
-  const efficiencyVoices = useMemo(() => {
-    const KEYWORDS = [
-      "効率", "時短", "短縮", "早く", "速く", "削減", "楽に", "楽になった",
-      "スムーズ", "簡単", "手間", "自動", "作成しやす", "時間",
+  // 効率化テーマの要約（自由記述をテーマ別に分類・集計してサマリー化）
+  const efficiencyThemes = useMemo(() => {
+    const THEMES = [
+      { label: "資料・文書作成の効率化", kw: ["文書", "資料", "作成", "レポート", "word", "ワード", "書類"] },
+      { label: "生成AI・ツールの活用", kw: ["ai", "copilot", "生成", "ツール", "関数", "excel", "エクセル", "ソフト", "chatgpt"] },
+      { label: "作業時間の短縮", kw: ["時短", "短縮", "早く", "速く", "スピード", "すぐ"] },
+      { label: "業務全般の効率化・省力化", kw: ["業務", "校務", "効率", "手間", "楽", "削減", "スムーズ", "簡単", "自動"] },
     ];
-    const scored = comments
-      .filter((c) => KEYWORDS.some((k) => c.includes(k)))
-      .sort((a, b) => b.length - a.length);
-    const picked = (scored.length ? scored : comments).slice(0, 3);
-    return picked.map((c) => (c.length > 120 ? c.slice(0, 118) + "…" : c));
+    return THEMES.map((t) => {
+      const count = comments.filter((c) => {
+        const lc = c.toLowerCase();
+        return t.kw.some((k) => lc.includes(k));
+      }).length;
+      return { label: t.label, count };
+    })
+      .filter((t) => t.count > 0)
+      .sort((a, b) => b.count - a.count);
   }, [comments]);
 
   // 実践予定「はい」割合
@@ -223,20 +229,20 @@ export function ClientReport({ rows, workdayMode, roi, filters, onClose }: Props
           研修全体の成果を示す代表的な指標です。数値が大きいほど効果が高いことを表します。
         </p>
 
-        {efficiencyVoices.length > 0 && (
+        {efficiencyThemes.length > 0 && (
           <div className="report-callout">
             <div className="report-callout-title">何が効率化できたのか（受講者の声より）</div>
             <p className="report-callout-lead">
-              以下に示す時間・コストの削減は、受講者が実際に「効率化できた」と実感した次のような業務の積み重ねによるものです。
+              受講者の声を分類すると、主に次のような業務の効率化が挙げられました。以下の時間・コスト削減は、これらの積み重ねによるものです。
             </p>
-            <ul className="report-callout-list">
-              {efficiencyVoices.map((v, i) => (
-                <li key={i}>「{v}」</li>
+            <ul className="report-theme-list">
+              {efficiencyThemes.map((t, i) => (
+                <li key={i}>
+                  <span className="report-theme-label">{t.label}</span>
+                  <span className="report-theme-count">{t.count}名が言及</span>
+                </li>
               ))}
             </ul>
-            <p className="report-callout-note">
-              こうした一つひとつの効率化を時間・金額に換算した結果が、以下の数値です。
-            </p>
           </div>
         )}
 
