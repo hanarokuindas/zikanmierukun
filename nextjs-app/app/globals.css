@@ -998,3 +998,41 @@ table.data-table th {
 .report-pie-wrap .recharts-wrapper {
   max-width: 100%;
 }
+
+/* レポート: 「何が効率化できたか」受講者の声のコールアウト */
+.report-callout {
+  border: 1px solid var(--primary);
+  background: var(--primary-light);
+  border-radius: 10px;
+  padding: 14px 18px;
+  margin-bottom: 18px;
+}
+.report-callout-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: 6px;
+}
+.report-callout-lead {
+  margin: 0 0 8px;
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--text);
+}
+.report-callout-list {
+  margin: 0 0 8px;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.report-callout-list li {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text);
+}
+.report-callout-note {
+  margin: 0;
+  font-size: 12px;
+  color: var(--muted);
+}

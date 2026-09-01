@@ -97,6 +97,19 @@ export function ClientReport({ rows, workdayMode, roi, filters, onClose }: Props
     [rows]
   );
 
+  // 効率化の具体例（受講者の声から、時間・コスト削減につながった内容を抜粋）
+  const efficiencyVoices = useMemo(() => {
+    const KEYWORDS = [
+      "効率", "時短", "短縮", "早く", "速く", "削減", "楽に", "楽になった",
+      "スムーズ", "簡単", "手間", "自動", "作成しやす", "時間",
+    ];
+    const scored = comments
+      .filter((c) => KEYWORDS.some((k) => c.includes(k)))
+      .sort((a, b) => b.length - a.length);
+    const picked = (scored.length ? scored : comments).slice(0, 3);
+    return picked.map((c) => (c.length > 120 ? c.slice(0, 118) + "…" : c));
+  }, [comments]);
+
   // 実践予定「はい」割合
   const applyYesPct = useMemo(() => {
     const answered = rows.filter((r) => r.would_apply != null);
@@ -209,6 +222,24 @@ export function ClientReport({ rows, workdayMode, roi, filters, onClose }: Props
         <p className="report-desc">
           研修全体の成果を示す代表的な指標です。数値が大きいほど効果が高いことを表します。
         </p>
+
+        {efficiencyVoices.length > 0 && (
+          <div className="report-callout">
+            <div className="report-callout-title">何が効率化できたのか（受講者の声より）</div>
+            <p className="report-callout-lead">
+              以下に示す時間・コストの削減は、受講者が実際に「効率化できた」と実感した次のような業務の積み重ねによるものです。
+            </p>
+            <ul className="report-callout-list">
+              {efficiencyVoices.map((v, i) => (
+                <li key={i}>「{v}」</li>
+              ))}
+            </ul>
+            <p className="report-callout-note">
+              こうした一つひとつの効率化を時間・金額に換算した結果が、以下の数値です。
+            </p>
+          </div>
+        )}
+
         <div className="report-kpi-grid">
           <div className="report-kpi">
             <div className="report-kpi-label">年間の節約時間</div>
