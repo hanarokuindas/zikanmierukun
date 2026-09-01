@@ -297,7 +297,7 @@ export function ClientReport({ rows, workdayMode, roi, filters, onClose }: Props
       </section>
 
       {/* 2. 時間削減の内訳 */}
-      <section className="report-section">
+      <section className="report-section report-page-break">
         <h2 className="report-heading">2. 年間節約時間とその算定根拠</h2>
         <p className="report-desc">
           この研修によって生み出された時間と、その算出方法を示します。

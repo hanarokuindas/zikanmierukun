@@ -879,6 +879,10 @@ table.data-table th {
   .recharts-responsive-container {
     break-inside: avoid;
   }
+  /* 指定セクションは新しいページから開始する */
+  .report-page-break {
+    break-before: page;
+  }
 }
 
 /* レポート: 年間節約時間の合計表示と算定根拠テーブル */
